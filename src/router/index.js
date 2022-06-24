@@ -107,6 +107,11 @@ export const constantRoutes = [
         meta: { title: '计划列表', icon: 'link' }
       },
       {
+        path: 'new',
+        name: 'New',
+        component: () => import('@/views/nested/menu1/newPlan/index')
+      },
+      {
         path: 'menu2',
         component: () => import('@/views/nested/menu2/index'),
         name: 'Menu2',

@@ -1,38 +1,48 @@
-<!-- <template>
-  <div style="padding:30px;">
-    <el-alert :closable="false" title="menu 1">
-      <router-view />
-    </el-alert>
-  </div>
-</template> -->
-
 <template>
   <div class="app-container">
-    <!-- <div class="filter-container">
-      <el-input v-model="listQuery.title" placeholder="Title" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
-      </el-select>
-      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
-      </el-select>
-      <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
-        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
-      </el-select>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-        Search
-      </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
-        Add
-      </el-button>
-      <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        Export
-      </el-button>
-      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
-        reviewer
-      </el-checkbox>
-    </div> -->
-
+    <div class="form-container">
+      <el-row>
+        <el-col :span="8">
+          <el-row>
+            <span>计划名称：</span>
+            <el-input
+              v-model="input1"
+              placeholder="请输入计划名称"
+              suffix-icon="el-icon-search"
+              size="medium"
+              class="input"
+            />
+          </el-row>
+        </el-col>
+        <el-col :span="8">
+          <el-row>
+            <span>计划状态：</span>
+            <el-select v-model="value" placeholder="请选择">
+              <el-option
+                v-for="item in options"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-row>
+        </el-col>
+        <el-col :span="8">
+          <el-row type="flex" justify="end">
+            <div>
+              <el-button plain>重置</el-button>
+              <el-button type="primary">查询</el-button>
+            </div>
+          </el-row>
+        </el-col>
+      </el-row>
+    </div>
+    <div class="btn-container">
+      <el-row type="flex" justify="end">
+        <el-button type="primary" @click="$router.push('new')">新建计划</el-button>
+        <el-button plain disabled>批量删除</el-button>
+      </el-row>
+    </div>
     <el-table
       :key="tableKey"
       v-loading="listLoading"
@@ -43,56 +53,81 @@
       style="width: 100%;"
       @sort-change="sortChange"
     >
-      <el-table-column label="ID" prop="id" sortable="custom" align="center" width="80" :class-name="getSortClass('id')">
+      <el-table-column
+        type="selection"
+        width="55"
+      />
+      <el-table-column label="缩略图" prop="pic" align="center" width="80" :class-name="getSortClass('id')">
         <template slot-scope="{row}">
-          <span>{{ row.id }}</span>
+          <span>{{ row.pic }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Date" width="150px" align="center">
+      <el-table-column label="计划名称" width="150px" align="center">
         <template slot-scope="{row}">
+          <span>{{ row.name }}</span>
+        </template>
+        <!-- <template slot-scope="{row}">
           <span>{{ row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
-        </template>
+        </template> -->
       </el-table-column>
-      <el-table-column label="Title" min-width="150px">
+      <el-table-column label="计划状态" min-width="150px">
         <template slot-scope="{row}">
           <span class="link-type" @click="handleUpdate(row)">{{ row.title }}</span>
-          <el-tag>{{ row.type | typeFilter }}</el-tag>
+          <el-tag>{{ row.status }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Author" width="110px" align="center">
+      <el-table-column label="播放模式" width="110px" align="center">
         <template slot-scope="{row}">
+          <span>{{ row.mode }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="播放日期" width="80px">
+        <template slot-scope="{row}">
+          <!-- <svg-icon v-for="n in + row.importance" :key="n" icon-class="star" class="meta-item__icon" /> -->
+          <span>{{ row.date }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="作者" align="center" width="95">
+        <template slot-scope="{row}">
+          <!-- <span v-if="row.pageviews" class="link-type" @click="handleFetchPv(row.pageviews)">{{ row.pageviews }}</span>
+          <span v-else>0</span> -->
           <span>{{ row.author }}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if="showReviewer" label="Reviewer" width="110px" align="center">
+      <el-table-column label="审核人" class-name="status-col" width="100">
         <template slot-scope="{row}">
-          <span style="color:red;">{{ row.reviewer }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="Imp" width="80px">
-        <template slot-scope="{row}">
-          <svg-icon v-for="n in + row.importance" :key="n" icon-class="star" class="meta-item__icon" />
-        </template>
-      </el-table-column>
-      <el-table-column label="Readings" align="center" width="95">
-        <template slot-scope="{row}">
-          <span v-if="row.pageviews" class="link-type" @click="handleFetchPv(row.pageviews)">{{ row.pageviews }}</span>
-          <span v-else>0</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="Status" class-name="status-col" width="100">
-        <template slot-scope="{row}">
-          <el-tag :type="row.status | statusFilter">
+          <!-- <el-tag :type="row.status | statusFilter">
             {{ row.status }}
-          </el-tag>
+          </el-tag> -->
+          <span>{{ row.admin }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="Actions" align="center" width="230" class-name="small-padding fixed-width">
+      <el-table-column label="更新时间" width="110px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.updateTime }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">
-            Edit
+          <el-button type="text" size="mini" @click="check(row)">
+            详情
           </el-button>
-          <el-button v-if="row.status!='published'" size="mini" type="success" @click="handleModifyStatus(row,'published')">
+          <el-button type="text" disabled size="mini" @click="handleUpdate(row)">
+            修改
+          </el-button>
+          <el-button type="text" size="mini">
+            复制
+          </el-button>
+          <el-button type="text" size="mini">
+            删除
+          </el-button>
+          <el-button type="text" size="mini">
+            加密下载
+          </el-button>
+          <el-button type="text" size="mini" disabled>
+            重新发布
+          </el-button>
+          <!-- <el-button v-if="row.status!='published'" size="mini" type="success" @click="handleModifyStatus(row,'published')">
             Publish
           </el-button>
           <el-button v-if="row.status!='draft'" size="mini" @click="handleModifyStatus(row,'draft')">
@@ -100,7 +135,7 @@
           </el-button>
           <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row,$index)">
             Delete
-          </el-button>
+          </el-button> -->
         </template>
       </el-table-column>
     </el-table>
@@ -108,37 +143,42 @@
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="Type" prop="type">
-          <el-select v-model="temp.type" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="Date" prop="timestamp">
-          <el-date-picker v-model="temp.timestamp" type="datetime" placeholder="Please pick a date" />
-        </el-form-item>
-        <el-form-item label="Title" prop="title">
-          <el-input v-model="temp.title" />
-        </el-form-item>
-        <el-form-item label="Status">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="Imp">
-          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;" />
-        </el-form-item>
-        <el-form-item label="Remark">
-          <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="Please input" />
-        </el-form-item>
-      </el-form>
+      <el-tabs v-model="activeName" type="card" @tab-click="handleClick">
+        <el-tab-pane label="计划详情" name="first">
+          <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+            <el-form-item label="Type" prop="type">
+              <el-select v-model="temp.type" class="filter-item" placeholder="Please select">
+                <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="Date" prop="timestamp">
+              <el-date-picker v-model="temp.timestamp" type="datetime" placeholder="Please pick a date" />
+            </el-form-item>
+            <el-form-item label="Title" prop="title">
+              <el-input v-model="temp.title" />
+            </el-form-item>
+            <el-form-item label="Status">
+              <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
+                <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="Imp">
+              <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;" />
+            </el-form-item>
+            <el-form-item label="Remark">
+              <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="Please input" />
+            </el-form-item>
+          </el-form></el-tab-pane>
+        <el-tab-pane label="设备详情" name="second">设备详情</el-tab-pane>
+      </el-tabs>
+
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
-          Cancel
+          返回
         </el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
+        <!-- <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
           Confirm
-        </el-button>
+        </el-button> -->
       </div>
     </el-dialog>
 
@@ -157,7 +197,7 @@
 <script>
 // import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
 import waves from '@/directive/waves' // waves directive
-// import { parseTime } from '@/utils'
+import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 const calendarTypeOptions = [
@@ -193,8 +233,31 @@ export default {
   data() {
     return {
       tableKey: 0,
-      list: null,
-      total: 0,
+      activeName: 'second',
+      list: [
+        {
+          pic: '1.jpg',
+          name: 'xxx',
+          status: '发布中',
+          mode: '按时段播放',
+          date: '2022-07-03',
+          author: 'catman',
+          admin: 'catmain',
+          updateTime: '2022-06-24 10:16:17'
+        },
+        {
+          pic: '1.jpg',
+          name: 'xxx',
+          status: '发布中',
+          mode: '按时段播放',
+          date: '2022-07-03',
+          author: 'catman',
+          admin: 'catmain',
+          updateTime: '2022-06-24 10:16:17'
+        }
+      ],
+      input1: 'hh',
+      total: 10,
       listLoading: true,
       listQuery: {
         page: 1,
@@ -231,7 +294,25 @@ export default {
         timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
         title: [{ required: true, message: 'title is required', trigger: 'blur' }]
       },
-      downloadLoading: false
+      downloadLoading: false,
+      options: [{
+        value: '选项1',
+        label: '黄金糕'
+      }, {
+        value: '选项2',
+        label: '双皮奶',
+        disabled: true
+      }, {
+        value: '选项3',
+        label: '蚵仔煎'
+      }, {
+        value: '选项4',
+        label: '龙须面'
+      }, {
+        value: '选项5',
+        label: '北京烤鸭'
+      }],
+      value: ''
     }
   },
   created() {
@@ -349,26 +430,29 @@ export default {
       })
       this.list.splice(index, 1)
     },
+    check(row) {
+      this.dialogFormVisible = true
+    },
     handleFetchPv(pv) {
       // fetchPv(pv).then(response => {
       //   this.pvData = response.data.pvData
       //   this.dialogPvVisible = true
       // })
     },
-    handleDownload() {
-      this.downloadLoading = true
-      // import('@/vendor/Export2Excel').then(excel => {
-      //   const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']
-      //   const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']
-      //   const data = this.formatJson(filterVal)
-      //   excel.export_json_to_excel({
-      //     header: tHeader,
-      //     data,
-      //     filename: 'table-list'
-      //   })
-      //   this.downloadLoading = false
-      // })
-    },
+    // handleDownload() {
+    //   this.downloadLoading = true
+    //   import('@/vendor/Export2Excel').then(excel => {
+    //     const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']
+    //     const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']
+    //     const data = this.formatJson(filterVal)
+    //     excel.export_json_to_excel({
+    //       header: tHeader,
+    //       data,
+    //       filename: 'table-list'
+    //     })
+    //     this.downloadLoading = false
+    //   })
+    // },
     // formatJson(filterVal) {
     //   return this.list.map(v => filterVal.map(j => {
     //     if (j === 'timestamp') {
@@ -385,3 +469,16 @@ export default {
   }
 }
 </script>
+<style scoped>
+.app-container {
+   background-color: rgb(240, 242, 245);
+}
+.form-container ,.btn-container{
+  background: #fff;
+  padding: 16px 20px;
+  margin-bottom: 15px;
+}
+.input {
+  width: 60%;
+}
+</style>

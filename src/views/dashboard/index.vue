@@ -34,6 +34,42 @@ export default {
 
     <panel-group @handleSetLineChartData="handleSetLineChartData" />
 
+    <el-row>
+      <el-col :xs="24" :sm="24" :lg="7">
+        <div class="chart-wrapper">
+          <div class="head-title">设备状态</div>
+          <doughnut-chart />
+        </div>
+      </el-col>
+      <el-col :xs="24" :sm="24" :lg="7">
+        <div class="chart-wrapper">
+          <div class="head-title">素材资源</div>
+          <pie-chart />
+        </div>
+      </el-col>
+      <el-col :xs="24" :sm="24" :lg="10">
+        <div class="chart-wrapper">
+          <div class="head-title">设备分布</div>
+          <column-chart />
+        </div>
+      </el-col>
+    </el-row>
+
+    <el-row>
+      <el-col :xs="24" :sm="24" :lg="14">
+        <div class="form-wrapper">
+          <div class="head-title">计划审核提醒</div>
+          <plan-form />
+        </div>
+      </el-col>
+      <el-col :xs="24" :sm="24" :lg="10">
+        <div class="form-wrapper1">
+          <div class="head-title">事件记录</div>
+          <form-record />
+        </div>
+      </el-col>
+    </el-row>
+
     <!-- <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
       <line-chart :chart-data="lineChartData" />
     </el-row>
@@ -74,8 +110,11 @@ export default {
 // import GithubCorner from '@/components/GithubCorner'
 import PanelGroup from './components/PanelGroup'
 // import LineChart from './components/LineChart'
-// import RaddarChart from './components/RaddarChart'
-// import PieChart from './components/PieChart'
+import DoughnutChart from './components/DoughnutChart'
+import PieChart from './components/PieChart'
+import ColumnChart from './components/ColumnChart.vue'
+import PlanForm from './components/PlanForm.vue'
+import FormRecord from './components/FormRecord.vue'
 // import BarChart from './components/BarChart'
 // import TransactionTable from './components/TransactionTable'
 // import TodoList from './components/TodoList'
@@ -103,14 +142,18 @@ const lineChartData = {
 export default {
   name: 'DashboardAdmin',
   components: {
-    PanelGroup
-    // LineChart,
+    PanelGroup,
     // RaddarChart,
     // PieChart,
     // BarChart,
     // TransactionTable,
     // TodoList,
     // BoxCard
+    DoughnutChart,
+    PieChart,
+    ColumnChart,
+    PlanForm,
+    FormRecord
   },
   data() {
     return {
@@ -142,6 +185,32 @@ export default {
     background: #fff;
     padding: 16px 16px 0;
     margin-bottom: 32px;
+    margin: 0 10px;
+  }
+
+  .form-wrapper1 {
+    background: #fff;
+    margin-top: 20px;
+    padding: 16px 16px;
+    margin-left: 10px;
+    height: 330px;
+    overflow: auto;
+
+  }
+    .form-wrapper {
+    background: #fff;
+    margin-top: 20px;
+    padding: 16px 16px;
+    margin-left: 10px;
+
+  }
+  .head-title:before {
+    content: "|";
+    background-color: #1890ff!important;
+    color: #1890ff!important;
+    font-weight: 700!important;
+    margin-right: 8px!important;
+
   }
 }
 
