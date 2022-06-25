@@ -47,7 +47,18 @@
       <el-row :gutter="20">
         <el-col :span="8">
           <div class="left-content" @click="handleAddTime">
-            <ul />
+            <ul v-if="timeLists.length > 0">
+              <li v-for="(time,idx) in timeLists" :key="idx">
+                <div class="time-list">
+                  <div>循环时间段：</div>
+                  <div>{{ time.cicrleTime }}</div>
+                  <div>循环周期：</div>
+                  <el-tag v-if="time.day =='每天'">{{ time.day }}</el-tag>
+                  <div v-else>{{ time.day }}</div>
+                </div>
+
+              </li>
+            </ul>
             <div class="add">
               <span><i class="el-icon-circle-plus-outline" /></span>
               <span>
@@ -64,7 +75,7 @@
                 <div class="add1">
                   <span><i class="el-icon-circle-plus-outline" /></span>
                   <span>
-                    添加时间段
+                    添加节目
                   </span>
                 </div>
               </li>
@@ -81,7 +92,7 @@
       </el-form-item>
 
       <el-dialog title="设置播放时间段" :visible.sync="dialogFormVisible">
-        <el-form label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+        <el-form label-position="left" label-width="100px" style="width: 400px; margin-left:50px;height:250px;" :model="timeForm">
           <el-form-item
             label="循环时间段"
             :rules="[
@@ -103,19 +114,31 @@
               { required: true},
             ]"
           >
-            <el-select v-model="value" placeholder="请选择">
+            <el-select v-model="value" placeholder="请选择" clearable @change="itemChange">
               <el-option
                 v-for="item in options"
                 :key="item.value"
                 :label="item.label"
-                :value="item.value"
+                :value="item.label"
               />
             </el-select>
           </el-form-item>
-
+          <el-col v-if="isShow">
+            <el-checkbox-group v-model="checkDates">
+              <el-checkbox v-for="date in dateLists" :key="date" :label="date">{{ date }}</el-checkbox>
+            </el-checkbox-group>
+          </el-col>
+          <el-col v-if="isShow1" class="choose-day">
+            <!-- <el-checkbox-group v-model="checkDays">
+              <el-checkbox-button v-for="day in dayLists" :key="day" :label="day">{{ day }}</el-checkbox-button>
+            </el-checkbox-group> -->
+            <ul>
+              <li v-for="(day,index) in dayLists" :key="index"><span :class="highlightClass(index)" @click="checkIndex(index)">{{ day }}</span></li>
+            </ul>
+          </el-col>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
+          <el-button type="primary" @click="createTime">
             确认
           </el-button>
           <el-button @click="dialogFormVisible = false">
@@ -128,6 +151,7 @@
   </div>
 </template>
 <script>
+
 export default {
   data() {
     return {
@@ -141,30 +165,55 @@ export default {
         resource: '',
         desc: ''
       },
+      // timeForm: {
+      //   cicrleTime: '',
+      //   day: '',
+      //   week: [],
+      //   month: []
+
+      // },
+      timeLists: [],
+      currentLists: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+      dateLists: ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期七'],
+      dayLists: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31'],
+      checkDates: [],
+      checkDays: [],
+      isShow: false,
+      isShow1: false,
       dialogFormVisible: false,
       value1: '',
       value2: [new Date(2016, 9, 10, 8, 40), new Date(2016, 9, 10, 9, 40)],
       options: [{
-        value: '选项1',
-        label: '黄金糕'
+        value: '1',
+        label: '每天'
       }, {
-        value: '选项2',
-        label: '双皮奶',
-        disabled: true
+        value: '2',
+        label: '每周'
       }, {
-        value: '选项3',
-        label: '蚵仔煎'
-      }, {
-        value: '选项4',
-        label: '龙须面'
-      }, {
-        value: '选项5',
-        label: '北京烤鸭'
+        value: '3',
+        label: '每月'
       }],
       value: ''
     }
   },
+  computed: {
+
+  },
   methods: {
+    createTime() {
+      this.dialogFormVisible = false
+      this.timeLists = [...this.timeLists]
+      this.timeLists.push({
+        cicrleTime: this.value2,
+        day: this.value
+
+      })
+      console.log(this.timeLists[0])
+    },
+    highlightClass(i) {
+      // console.log(this.currentLists[i])
+      return this.currentLists[i] ? 'selected' : 'not-selected'
+    },
     onSubmit() {
       this.$message('submit!')
     },
@@ -182,6 +231,23 @@ export default {
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
       })
+    },
+    checkIndex(i) {
+      this.currentLists = [...this.currentLists]
+      this.currentLists[i] = !this.currentLists[i]
+    },
+    itemChange() {
+      console.log(this.value)
+      if (this.value == '每周') {
+        this.isShow = true
+        this.isShow1 = false
+      } else if (this.value == '每月') {
+        this.isShow1 = true
+        this.isShow = false
+      } else {
+        this.isShow = false
+        this.isShow1 = false
+      }
     }
   }
 }
@@ -206,6 +272,14 @@ export default {
     border-radius: 5px;
     color: #dadada;
 }
+.time-list {
+   margin: 1rem 0;
+    /* height: 95px; */
+    text-align: center;
+    /* line-height: 95px; */
+    border: 2px solid #dadada;
+    color: #1890ff;
+}
 .add1 {
     cursor: pointer;
     margin: 1rem 0;
@@ -221,5 +295,28 @@ export default {
 ul {
     list-style: none;
 
+}
+.choose-day ul {
+  overflow: hidden;
+  width: 301px;
+  margin: 0 auto;
+  padding: 0;
+}
+.choose-day ul li {
+  float: left;
+  width: 43px;
+  text-align: center;
+  padding: 3px 0;
+}
+.choose-day ul li span {
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  display: inline-block;
+  cursor: pointer;
+}
+.choose-day ul li span.selected{
+ color: #fff;
+ background: #1890ff;
 }
 </style>

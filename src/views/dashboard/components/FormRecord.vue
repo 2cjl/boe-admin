@@ -1,18 +1,20 @@
 <template>
   <div class="app-container">
     <!-- <el-scrollbar style="height: 100%" class="main-content"> -->
-    <div v-for="(item,i) in recordList" :key="i" class="main-container">
-      <div class="time">
-        {{ item.time }}
+    <div class="main-container">
+      <div v-for="(item,i) in recordList" :key="i">
+        <div class="time">
+          {{ item.time }}
+        </div>
+        <div class="content">
+          {{ item.content }}
+        </div>
+        <el-divider class="divider" />
       </div>
-      <div class="content">
-        {{ item.content }}
-      </div>
-      <el-divider class="divider" />
+
+    <!-- </div></el-scrollbar> -->
     </div>
-    <!-- </el-scrollbar> -->
-  </div>
-</template>
+  </div></template>
 
 <script>
 export default {
@@ -65,18 +67,19 @@ export default {
 .content {
     font-size: 14px;
 }
-.app-container {
-    /* height: 330px; */
-    overflow: auto;
-    /* overflow-x: hidden; */
+.main-container {
+    height: 270px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
 }
 .divider {
     margin:12px
 }
 /* .main-content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    height: 300px;
+    overflow: auto;
+
 } */
 
 </style>

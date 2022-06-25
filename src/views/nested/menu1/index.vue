@@ -143,9 +143,49 @@
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-tabs v-model="activeName" type="card" @tab-click="handleClick">
+      <el-tabs v-model="activeName" type="card">
         <el-tab-pane label="计划详情" name="first">
-          <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+          <el-row>
+            <el-col :span="12">
+              <span>
+                计划名称：{{ list[0].name }}
+              </span>
+            </el-col>
+            <el-col :span="12"><span>播放日期：{{ list[0].date }}</span></el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <span>
+                播放模式：{{ list[0].mode }}
+              </span>
+            </el-col>
+            <el-col :span="12"><span>播放策略：</span></el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <span>
+                多屏同步：
+              </span>
+            </el-col>
+            <el-col :span="12"><span>发布状态：</span></el-col>
+          </el-row>
+          <el-col>
+            <span>创建时间：</span>
+          </el-col>
+          <el-col>
+            <div>播放时段：hsjsj<br>
+              循环类型：<br>
+              循环时间段：<br>
+            </div>
+
+          </el-col>
+          <el-col>
+            <div>已选节目：</div>
+          </el-col>
+          <el-col>
+            <div>原因：</div>
+          </el-col>
+          <!-- <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
             <el-form-item label="Type" prop="type">
               <el-select v-model="temp.type" class="filter-item" placeholder="Please select">
                 <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
@@ -168,7 +208,8 @@
             <el-form-item label="Remark">
               <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="Please input" />
             </el-form-item>
-          </el-form></el-tab-pane>
+          </el-form> -->
+        </el-tab-pane>
         <el-tab-pane label="设备详情" name="second">设备详情</el-tab-pane>
       </el-tabs>
 
@@ -233,7 +274,7 @@ export default {
   data() {
     return {
       tableKey: 0,
-      activeName: 'second',
+      activeName: 'first',
       list: [
         {
           pic: '1.jpg',

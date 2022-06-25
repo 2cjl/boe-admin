@@ -194,7 +194,6 @@ export default {
     padding: 16px 16px;
     margin-left: 10px;
     height: 330px;
-    overflow: auto;
 
   }
     .form-wrapper {
