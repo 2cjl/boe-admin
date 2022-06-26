@@ -32,6 +32,18 @@ module.exports = {
   devServer: {
     port: port,
     open: true,
+    proxy: {
+      '/dev-api': {
+        target: 'http://boe.vinf.top:8888',
+        // target: 'http://127.0.0.1:8080',
+        pathRewrite: { '^/dev-api': '' }
+      }
+      // '/dev-api/spike/spike': {
+      //   // target: 'http://spike.vinf.top',
+      //   target: 'http://127.0.0.1:8081',
+      //   pathRewrite: { '^/dev-api/spike': '' }
+      // }
+    },
     overlay: {
       warnings: false,
       errors: true

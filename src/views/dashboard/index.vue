@@ -65,7 +65,9 @@ export default {
       <el-col :xs="24" :sm="24" :lg="10">
         <div class="form-wrapper1">
           <div class="head-title">事件记录</div>
+
           <form-record />
+
         </div>
       </el-col>
     </el-row>
@@ -119,6 +121,7 @@ import FormRecord from './components/FormRecord.vue'
 // import TransactionTable from './components/TransactionTable'
 // import TodoList from './components/TodoList'
 // import BoxCard from './components/BoxCard'
+import { getEventsRecord } from '@/api/home'
 
 const lineChartData = {
   newVisitis: {
@@ -157,10 +160,20 @@ export default {
   },
   data() {
     return {
-      lineChartData: lineChartData.newVisitis
+      lineChartData: lineChartData.newVisitis,
+      eventsRecord: {}
     }
   },
+  mounted() {
+    this.query()
+  },
   methods: {
+    query() {
+      getEventsRecord().then((res) => {
+        this.eventsRecord = res
+        console.log(this.eventsRecord)
+      })
+    },
     handleSetLineChartData(type) {
       this.lineChartData = lineChartData[type]
     }
@@ -209,7 +222,6 @@ export default {
     color: #1890ff!important;
     font-weight: 700!important;
     margin-right: 8px!important;
-
   }
 }
 

@@ -71,8 +71,8 @@ export default {
     height: 270px;
     overflow-y: auto;
     overflow-x: hidden;
-
 }
+
 .divider {
     margin:12px
 }

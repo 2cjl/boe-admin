@@ -47,18 +47,23 @@
       <el-row :gutter="20">
         <el-col :span="8">
           <div class="left-content" @click="handleAddTime">
-            <ul v-if="timeLists.length > 0">
-              <li v-for="(time,idx) in timeLists" :key="idx">
+            <div v-if="timeLists.length > 0">
+              <div v-for="(time,idx) in timeLists" :key="idx">
                 <div class="time-list">
-                  <div>循环时间段：</div>
+                  <el-row>
+                    <span>循环时间段：</span>
+                    <i class="el-icon-edit" />
+                    <i class="el-icon-delete" />
+                  </el-row>
+
                   <div>{{ time.cicrleTime }}</div>
                   <div>循环周期：</div>
                   <el-tag v-if="time.day =='每天'">{{ time.day }}</el-tag>
                   <div v-else>{{ time.day }}</div>
                 </div>
 
-              </li>
-            </ul>
+              </div>
+            </div>
             <div class="add">
               <span><i class="el-icon-circle-plus-outline" /></span>
               <span>
@@ -70,25 +75,25 @@
 
         <el-col :span="16">
           <div class="right-content">
-            <ul>
-              <li>
+            <div>
+              <div>
                 <div class="add1">
                   <span><i class="el-icon-circle-plus-outline" /></span>
                   <span>
                     添加节目
                   </span>
                 </div>
-              </li>
-            </ul>
+              </div>
+            </div>
           </div>
 
         </el-col>
 
       </el-row>
       <el-form-item>
-        <el-button @click="onSubmit">取消</el-button>
-        <el-button @click="onCancel">保存</el-button>
-        <el-button type="primary">下一步</el-button>
+        <el-button @click="$router.go(-1)">取消</el-button>
+        <el-button>保存</el-button>
+        <el-button type="primary" @click="$router.push('device')">下一步</el-button>
       </el-form-item>
 
       <el-dialog title="设置播放时间段" :visible.sync="dialogFormVisible">
@@ -199,6 +204,7 @@ export default {
   computed: {
 
   },
+
   methods: {
     createTime() {
       this.dialogFormVisible = false
@@ -208,6 +214,9 @@ export default {
         day: this.value
 
       })
+      const h = new Date(this.timeLists[0].cicrleTime[0])
+      const hours = h.getHours()
+      console.log(hours)
       console.log(this.timeLists[0])
     },
     highlightClass(i) {
@@ -274,11 +283,14 @@ export default {
 }
 .time-list {
    margin: 1rem 0;
+   padding: 5px;
     /* height: 95px; */
-    text-align: center;
+    text-align: left;
+    line-height: 18px;
     /* line-height: 95px; */
     border: 2px solid #dadada;
     color: #1890ff;
+    font-size: 14px;
 }
 .add1 {
     cursor: pointer;

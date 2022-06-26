@@ -112,6 +112,12 @@ export const constantRoutes = [
         component: () => import('@/views/nested/menu1/newPlan/index')
       },
       {
+        path: 'device',
+        name: 'Device',
+        component: () => import('@/views/nested/menu1/deviceManage/index')
+
+      },
+      {
         path: 'menu2',
         component: () => import('@/views/nested/menu2/index'),
         name: 'Menu2',
