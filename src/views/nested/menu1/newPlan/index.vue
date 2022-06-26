@@ -46,25 +46,41 @@
 
       <el-row :gutter="20">
         <el-col :span="8">
-          <div class="left-content" @click="handleAddTime">
+          <div class="left-content">
             <div v-if="timeLists.length > 0">
               <div v-for="(time,idx) in timeLists" :key="idx">
                 <div class="time-list">
                   <el-row>
-                    <span>循环时间段：</span>
-                    <i class="el-icon-edit" />
-                    <i class="el-icon-delete" />
+                    <el-col :span="18">循环时间段：</el-col>
+                    <el-col :span="6" class="icon-container">
+                      <i class="el-icon-edit" @click="handleEdit(idx)" />
+                      <i class="el-icon-delete" @click="handleDelete" />
+                    </el-col>
                   </el-row>
 
-                  <div>{{ time.cicrleTime }}</div>
+                  <div class="time-container">
+                    <span>{{ time.startTime }}</span>~<span>{{ time.endTime }}</span>
+
+                  </div>
                   <div>循环周期：</div>
-                  <el-tag v-if="time.day =='每天'">{{ time.day }}</el-tag>
-                  <div v-else>{{ time.day }}</div>
+                  <el-tag v-if="time.day.period =='每天'">{{ time.day.period }}</el-tag>
+                  <div v-else-if="time.day.period =='每周'">
+                    {{ time.day.period }}:
+                    <el-tag v-for="(item,idx) in time.day.week" :key="idx">
+                      {{ time.day.week[idx] }}
+                    </el-tag>
+                  </div>
+                  <div v-else>
+                    {{ time.day.period }}:
+                    <el-tag v-for="(item,idx) in time.day.date" :key="idx">
+                      {{ time.day.date[idx] }}号
+                    </el-tag>
+                  </div>
                 </div>
 
               </div>
             </div>
-            <div class="add">
+            <div class="add" @click="handleAddTime">
               <span><i class="el-icon-circle-plus-outline" /></span>
               <span>
                 添加时间段
@@ -77,7 +93,7 @@
           <div class="right-content">
             <div>
               <div>
-                <div class="add1">
+                <div class="add1" @click="handleAddProgram">
                   <span><i class="el-icon-circle-plus-outline" /></span>
                   <span>
                     添加节目
@@ -97,7 +113,7 @@
       </el-form-item>
 
       <el-dialog title="设置播放时间段" :visible.sync="dialogFormVisible">
-        <el-form label-position="left" label-width="100px" style="width: 400px; margin-left:50px;height:250px;" :model="timeForm">
+        <el-form label-position="left" label-width="100px" style="width: 400px; margin-left:50px;height:250px;">
           <el-form-item
             label="循环时间段"
             :rules="[
@@ -146,11 +162,102 @@
           <el-button type="primary" @click="createTime">
             确认
           </el-button>
-          <el-button @click="dialogFormVisible = false">
+          <el-button @click="cancelTime(time)">
             取消
           </el-button>
         </div>
       </el-dialog>
+      <el-dialog title="添加节目" :visible.sync="dialogProgramVisible">
+        <div class="form-container">
+          <el-row>
+            <el-col :span="8">
+              <el-row>
+                <span>节目名称：</span>
+                <el-input
+                  v-model="input1"
+                  placeholder="请输入节目名称"
+                  suffix-icon="el-icon-search"
+                  size="medium"
+                  class="input"
+                />
+              </el-row>
+            </el-col>
+            <el-col :span="8">
+              <el-row>
+                <span>分辨率：</span>
+                <el-select v-model="ratio" placeholder="请选择">
+                  <el-option
+                    v-for="item in ratioLists"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-row>
+            </el-col>
+            <el-col :span="8">
+              <el-row type="flex" justify="end">
+                <div>
+                  <el-button plain>重置</el-button>
+                  <el-button type="primary">查询</el-button>
+                </div>
+              </el-row>
+            </el-col>
+          </el-row>
+        </div>
+        <el-table
+          :data="programList"
+          border
+          fit
+          highlight-current-row
+          style="width: 100%;"
+        >
+          <el-table-column
+            type="selection"
+            width="55"
+          />
+          <el-table-column label="缩略图" prop="pic" align="center" width="80">
+            <template slot-scope="{row}">
+              <span>{{ row.pic }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="节目名称" min-width="150px" align="center">
+            <template slot-scope="{row}">
+              <span>{{ row.name }}</span>
+            </template>
+            <!-- <template slot-scope="{row}">
+          <span>{{ row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+        </template> -->
+          </el-table-column>
+          <el-table-column label="分辨率" width="150px">
+            <template slot-scope="{row}">
+              <el-tag>{{ row.ratio }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="节目时长" width="110px" align="center">
+            <template slot-scope="{row}">
+              <span>{{ row.time }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="节目大小" width="80px">
+            <template slot-scope="{row}">
+              <span>{{ row.size }}</span>
+            </template>
+          </el-table-column>
+
+        </el-table>
+
+        <!-- <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" /> -->
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="dialogProgramVisible = false">
+            返回
+          </el-button>
+          <el-button type="primary">
+            保存
+          </el-button>
+        </div>
+      </el-dialog>
+
     </el-form>
 
   </div>
@@ -170,6 +277,9 @@ export default {
         resource: '',
         desc: ''
       },
+      ratio: '',
+      input1: '',
+      programList: [],
       // timeForm: {
       //   cicrleTime: '',
       //   day: '',
@@ -178,14 +288,32 @@ export default {
 
       // },
       timeLists: [],
+      ratioLists: [{
+        value: '1',
+        label: '全部分辨率'
+      }, {
+        value: '2',
+        label: '3840x2160'
+      }, {
+        value: '3',
+        label: '2160x3840'
+      }, {
+        value: '4',
+        label: '1920x1080'
+      }, {
+        value: '5',
+        label: '1080x1920'
+      }],
       currentLists: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
       dateLists: ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期七'],
       dayLists: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31'],
       checkDates: [],
       checkDays: [],
+      chooseDays: [],
       isShow: false,
       isShow1: false,
       dialogFormVisible: false,
+      dialogProgramVisible: false,
       value1: '',
       value2: [new Date(2016, 9, 10, 8, 40), new Date(2016, 9, 10, 9, 40)],
       options: [{
@@ -198,7 +326,10 @@ export default {
         value: '3',
         label: '每月'
       }],
-      value: ''
+      value: '',
+      startTime: '',
+      endTime: '',
+      nowModifyTime: -1
     }
   },
   computed: {
@@ -206,18 +337,105 @@ export default {
   },
 
   methods: {
-    createTime() {
+    handleEdit(idx) {
+      this.nowModifyTime = idx
+      const time = this.timeLists[idx]
+      this.dialogFormVisible = true
+      this.value = time.day.period
+      if (time.day.period === '每周') {
+        this.isShow = true
+        this.isShow1 = false
+        this.checkDates = time.day.week
+      } else if (time.day.period === '每月') {
+        this.isShow = false
+        this.isShow1 = true
+        const dayArr = time.day.date
+        for (var i = 0; i < dayArr.length; i++) {
+          this.currentLists[dayArr[i] - 1] = true
+        }
+      } else {
+        this.isShow = false
+        this.isShow1 = false
+      }
+    },
+    cancelTime(time) {
+      for (var i = 0; i < this.currentLists.length; i++) {
+        this.currentLists[i] = false
+      }
+      this.checkDates = []
       this.dialogFormVisible = false
-      this.timeLists = [...this.timeLists]
-      this.timeLists.push({
-        cicrleTime: this.value2,
-        day: this.value
-
+    },
+    handleDelete() {
+      this.$confirm('确定删除此时间段', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$message({
+          type: 'success',
+          message: '删除成功!'
+        })
+        this.timeLists.pop()
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
       })
-      const h = new Date(this.timeLists[0].cicrleTime[0])
-      const hours = h.getHours()
-      console.log(hours)
-      console.log(this.timeLists[0])
+    },
+    createTime() {
+      this.startTime = new Date(this.value2[0]).toLocaleString().substring(11, 19)
+
+      this.endTime = new Date(this.value2[1]).toLocaleString().substring(11, 19)
+      // const t1 = []
+      // const t2 = []
+      // for (var i = 0; i < this.checkDates.length; i++) {
+      //   t1.push(this.checkDates[i])
+      // }
+      // this.checkDates = []
+      for (var j = 0; j < this.currentLists.length; j++) {
+        if (this.currentLists[j] === true) {
+          this.chooseDays.push(j + 1)
+          this.currentLists[j] = false
+        }
+      }
+      this.dialogFormVisible = false
+      if (this.nowModifyTime !== -1) {
+        this.timeLists[this.nowModifyTime] = {
+          startTime: this.startTime,
+          endTime: this.endTime,
+          // day: this.value
+          day: {
+            period: this.value,
+            week: this.checkDates,
+            date: this.chooseDays
+
+          }
+
+        }
+        this.nowModifyTime = -1
+      } else {
+        this.timeLists = [...this.timeLists]
+        this.timeLists.push({
+          startTime: this.startTime,
+          endTime: this.endTime,
+          // day: this.value
+          day: {
+            period: this.value,
+            week: this.checkDates,
+            date: this.chooseDays
+
+          }
+
+        })
+      }
+      this.checkDates = []
+      this.chooseDays = []
+      console.log('timeLists', this.timeLists)
+      // const h = new Date(this.timeLists[0].cicrleTime[0])
+      // const hours = h.getHours()
+      // console.log(hours)
+      // console.log(this.timeLists[0])
     },
     highlightClass(i) {
       // console.log(this.currentLists[i])
@@ -241,9 +459,20 @@ export default {
         this.$refs['dataForm'].clearValidate()
       })
     },
+    handleAddProgram() {
+      this.dialogProgramVisible = true
+    },
     checkIndex(i) {
       this.currentLists = [...this.currentLists]
       this.currentLists[i] = !this.currentLists[i]
+      // this.chooseDays.push(i + 1)
+      // for (var idx = 0; idx < this.currentLists.length; idx++) {
+      //   if (this.currentLists[idx] === true) {
+      //     this.chooseDays.push(idx + 1)
+      //     this.currentLists[idx] = false
+      //   }
+      // }
+      // console.log(this.chooseDays)
     },
     itemChange() {
       console.log(this.value)
@@ -330,5 +559,13 @@ ul {
 .choose-day ul li span.selected{
  color: #fff;
  background: #1890ff;
+}
+.icon-container i{
+  padding-left: 20px;
+}
+.icon-container {
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 </style>
