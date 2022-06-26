@@ -33,7 +33,7 @@ module.exports = {
     port: port,
     open: true,
     proxy: {
-      '/dev-api': {
+      '/dev-api/': {
         target: 'http://boe.vinf.top:8888',
         // target: 'http://127.0.0.1:8080',
         pathRewrite: { '^/dev-api': '' }

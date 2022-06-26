@@ -121,7 +121,7 @@ import FormRecord from './components/FormRecord.vue'
 // import TransactionTable from './components/TransactionTable'
 // import TodoList from './components/TodoList'
 // import BoxCard from './components/BoxCard'
-import { getEventsRecord } from '@/api/home'
+// import { getEventsRecord } from '@/api/home'
 
 const lineChartData = {
   newVisitis: {
@@ -164,15 +164,15 @@ export default {
       eventsRecord: {}
     }
   },
-  mounted() {
-    this.query()
-  },
+  // mounted() {
+  //   this.query()
+  // },
   methods: {
     query() {
-      getEventsRecord().then((res) => {
-        this.eventsRecord = res
-        console.log(this.eventsRecord)
-      })
+      // getEventsRecord().then((res) => {
+      //   this.eventsRecord = res.data.events
+      //   console.log(this.eventsRecord)
+      // })
     },
     handleSetLineChartData(type) {
       this.lineChartData = lineChartData[type]

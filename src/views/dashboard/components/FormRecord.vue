@@ -2,12 +2,17 @@
   <div class="app-container">
     <!-- <el-scrollbar style="height: 100%" class="main-content"> -->
     <div class="main-container">
-      <div v-for="(item,i) in recordList" :key="i">
+      <div v-for="(item,i) in eventsRecord" :key="i">
         <div class="time">
-          {{ item.time }}
+          {{ item.Time }}
         </div>
-        <div class="content">
-          {{ item.content }}
+        <div class="content-container">
+          <div class="object-type">
+            [{{ item.ObjectType }}]
+          </div>
+          <div class="content">
+            {{ item.Content }}
+          </div>
         </div>
         <el-divider class="divider" />
       </div>
@@ -17,44 +22,57 @@
   </div></template>
 
 <script>
+import { getEventsRecord } from '@/api/home'
 export default {
   data() {
     return {
-      recordList: [
-        {
-          time: '2022-06-23 11:28:01',
-          content: '[设备]测试误删设备注册成功'
-        },
-        {
-          time: '2022-06-23 11:04:01',
-          content: '[设备]测试误删设备已上线'
-        },
-        {
-          time: '2022-06-23 11:28:01',
-          content: '[设备]测试误删设备注册成功'
-        },
-        {
-          time: '2022-06-23 11:04:01',
-          content: '[设备]测试误删设备已上线'
-        },
-        {
-          time: '2022-06-23 11:28:01',
-          content: '[设备]测试误删设备注册成功'
-        },
-        {
-          time: '2022-06-23 11:04:01',
-          content: '[设备]测试误删设备已上线'
-        },
-        {
-          time: '2022-06-23 11:28:01',
-          content: '[设备]测试误删设备注册成功'
-        },
-        {
-          time: '2022-06-23 11:04:01',
-          content: '[设备]测试误删设备已上线'
-        }
-      ]
+      // recordList: [
+      //   {
+      //     time: '2022-06-23 11:28:01',
+      //     content: '[设备]测试误删设备注册成功'
+      //   },
+      //   {
+      //     time: '2022-06-23 11:04:01',
+      //     content: '[设备]测试误删设备已上线'
+      //   },
+      //   {
+      //     time: '2022-06-23 11:28:01',
+      //     content: '[设备]测试误删设备注册成功'
+      //   },
+      //   {
+      //     time: '2022-06-23 11:04:01',
+      //     content: '[设备]测试误删设备已上线'
+      //   },
+      //   {
+      //     time: '2022-06-23 11:28:01',
+      //     content: '[设备]测试误删设备注册成功'
+      //   },
+      //   {
+      //     time: '2022-06-23 11:04:01',
+      //     content: '[设备]测试误删设备已上线'
+      //   },
+      //   {
+      //     time: '2022-06-23 11:28:01',
+      //     content: '[设备]测试误删设备注册成功'
+      //   },
+      //   {
+      //     time: '2022-06-23 11:04:01',
+      //     content: '[设备]测试误删设备已上线'
+      //   }
+      // ]
+      eventsRecord: {}
 
+    }
+  },
+  mounted() {
+    this.query()
+  },
+  methods: {
+    query() {
+      getEventsRecord().then((res) => {
+        this.eventsRecord = res.data.events
+        console.log(this.eventsRecord)
+      })
     }
   }
 
@@ -64,9 +82,9 @@ export default {
 .time {
     font-size: 12px;
 }
-.content {
+/* .content {
     font-size: 14px;
-}
+} */
 .main-container {
     height: 270px;
     overflow-y: auto;
@@ -75,6 +93,10 @@ export default {
 
 .divider {
     margin:12px
+}
+.content-container {
+  display: flex;
+  font-size: 14px;
 }
 /* .main-content {
     height: 300px;
