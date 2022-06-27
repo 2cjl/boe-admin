@@ -80,12 +80,19 @@ export const constantRoutes = [
   {
     path: '/form',
     component: Layout,
+    redirect: '/form/programme',
+    name: 'Form',
+    alwaysShow: true,
+    meta: {
+      title: '节目制作与发布',
+      icon: 'form'
+    },
     children: [
       {
-        path: 'index',
-        name: 'Form',
-        component: () => import('@/views/form/index'),
-        meta: { title: '节目制作与发布', icon: 'form' }
+        path: 'programme',
+        name: 'Programme',
+        component: () => import('@/views/form/programme/index'),
+        meta: { title: '发布节目', icon: 'form' }
       }
     ]
   },
@@ -129,6 +136,15 @@ export const constantRoutes = [
   {
     path: 'external-link',
     component: Layout,
+<<<<<<< Updated upstream
+=======
+    redirect: '/device/menu1',
+    name: 'Device',
+    meta: {
+      title: '设备管理',
+      icon: 'link'
+    },
+>>>>>>> Stashed changes
     children: [
       {
         path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
