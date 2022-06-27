@@ -127,48 +127,25 @@ export const constantRoutes = [
   },
 
   {
-    path: '/device',
+    path: 'external-link',
     component: Layout,
-    redirect: '/device/menu1',
-    name: 'Device',
-    meta: {
-      title: '设备管理',
-      icon: 'device'
-    },
     children: [
       {
-        path: 'menu1',
-        component: () => import('@/views/device/menu1/index'), // Parent router-view
-        name: 'Menu1',
-        meta: { title: '设备列表', icon: 'link' }
-      },
-      {
-        path: 'menu2',
-        component: () => import('@/views/device/menu2/index'),
-        name: 'Menu2',
-        meta: { title: '分组管理', icon: 'link' }
+        path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
+        meta: { title: '设备管理', icon: 'link' }
       }
     ]
   },
 
+  // 404 page must be placed at the end !!!
+  { path: '*', redirect: '/404', hidden: true },
   {
-    path: '/user',
+    path: 'system-manage',
     component: Layout,
-    redirect: '/user/menu1',
-    name: 'User',
-    alwaysShow: true,
     meta: {
       title: '系统管理',
-      icon: 'user'
-    },
-    children: [
-      {
-        path: 'menu1',
-        component: () => import('@/views/user/menu1/index'), // Parent router-view
-        name: 'Menu1',
-        meta: { title: '账户管理', icon: 'user' }
-      }
-    ]
+      icon: 'nested'
+    }
   }
 
 ]

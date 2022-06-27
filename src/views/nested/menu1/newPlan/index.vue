@@ -49,12 +49,12 @@
           <div class="left-content">
             <div v-if="timeLists.length > 0">
               <div v-for="(time,idx) in timeLists" :key="idx">
-                <div class="time-list">
+                <div class="time-list" @click="changeProgramList(idx)">
                   <el-row>
                     <el-col :span="18">循环时间段：</el-col>
                     <el-col :span="6" class="icon-container">
                       <i class="el-icon-edit" @click="handleEdit(idx)" />
-                      <i class="el-icon-delete" @click="handleDelete" />
+                      <i class="el-icon-delete" @click="handleDelete(idx)" />
                     </el-col>
                   </el-row>
 
@@ -89,16 +89,30 @@
           </div>
         </el-col>
 
+        <!-- 添加节目按钮 -->
         <el-col :span="16">
           <div class="right-content">
             <div>
-              <div>
-                <div class="add1" @click="handleAddProgram">
-                  <span><i class="el-icon-circle-plus-outline" /></span>
-                  <span>
-                    添加节目
-                  </span>
+              <div v-if="timeListsSelect !== -1">
+                <div
+                  v-for="(program, idx) in timeLists[timeListsSelect].programs"
+                  class="program-card"
+                >
+                  <el-image
+                    style="height: 100px; width: 65px"
+                    :src="program.pic"
+                  />
+                  <div>{{ program.name }}</div>
+                  <div>{{ program.ratio }}</div>
+                  <div>{{ program.time }}</div>
+                  <i class="el-icon-close" @click="handleProgramDelete(idx)" />
                 </div>
+              </div>
+              <div class="add1" @click="handleAddProgram">
+                <span><i class="el-icon-circle-plus-outline" /></span>
+                <span>
+                  添加节目
+                </span>
               </div>
             </div>
           </div>
@@ -154,7 +168,10 @@
               <el-checkbox-button v-for="day in dayLists" :key="day" :label="day">{{ day }}</el-checkbox-button>
             </el-checkbox-group> -->
             <ul>
-              <li v-for="(day,index) in dayLists" :key="index"><span :class="highlightClass(index)" @click="checkIndex(index)">{{ day }}</span></li>
+              <li v-for="(day,index) in dayLists" :key="index"><span
+                :class="highlightClass(index)"
+                @click="checkIndex(index)"
+              >{{ day }}</span></li>
             </ul>
           </el-col>
         </el-form>
@@ -206,11 +223,13 @@
           </el-row>
         </div>
         <el-table
+          ref="programSelectTable"
           :data="programList"
           border
           fit
           highlight-current-row
           style="width: 100%;"
+          @selection-change="handleProgramSelectionChange"
         >
           <el-table-column
             type="selection"
@@ -218,7 +237,9 @@
           />
           <el-table-column label="缩略图" prop="pic" align="center" width="80">
             <template slot-scope="{row}">
-              <span>{{ row.pic }}</span>
+              <el-image
+                :src="row.pic"
+              />
             </template>
           </el-table-column>
           <el-table-column label="节目名称" min-width="150px" align="center">
@@ -252,7 +273,7 @@
           <el-button @click="dialogProgramVisible = false">
             返回
           </el-button>
-          <el-button type="primary">
+          <el-button type="primary" @click="programDialogSave">
             保存
           </el-button>
         </div>
@@ -279,7 +300,23 @@ export default {
       },
       ratio: '',
       input1: '',
-      programList: [],
+      programList: [
+        {
+          pic: 'https://s3.bmp.ovh/imgs/2022/06/24/415d5ef060f6b058.jpeg',
+          name: '测试节目1',
+          ratio: '1920x1080',
+          time: '5 秒',
+          size: '123 kb'
+        },
+        {
+          pic: 'https://s3.bmp.ovh/imgs/2022/06/24/50dedbe0da3b01f5.jpeg',
+          name: '测试节目2',
+          ratio: '1920x1080',
+          time: '10 秒',
+          size: '982 kb'
+        }
+      ],
+      programListSelection: [],
       // timeForm: {
       //   cicrleTime: '',
       //   day: '',
@@ -287,6 +324,7 @@ export default {
       //   month: []
 
       // },
+      timeListsSelect: -1, // TODO shanchu 当前所选时间段，用于展示节目
       timeLists: [],
       ratioLists: [{
         value: '1',
@@ -332,9 +370,7 @@ export default {
       nowModifyTime: -1
     }
   },
-  computed: {
-
-  },
+  computed: {},
 
   methods: {
     handleEdit(idx) {
@@ -365,7 +401,7 @@ export default {
       this.checkDates = []
       this.dialogFormVisible = false
     },
-    handleDelete() {
+    handleDelete(idx) {
       this.$confirm('确定删除此时间段', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -375,7 +411,13 @@ export default {
           type: 'success',
           message: '删除成功!'
         })
-        this.timeLists.pop()
+        this.timeLists.splice(idx, 1)
+        // 节目由于时间段删除变换
+        if (this.timeLists.length === 0) {
+          this.timeListsSelect = -1
+        } else if (this.timeListsSelect === idx) {
+          this.timeListsSelect = 0
+        }
       }).catch(() => {
         this.$message({
           type: 'info',
@@ -384,9 +426,26 @@ export default {
       })
     },
     createTime() {
-      this.startTime = new Date(this.value2[0]).toLocaleString().substring(11, 19)
+      const s = new Date(this.value2[0])
+      const e = new Date(this.value2[1])
+      console.log(e.toLocaleString())
+      this.startTime = s.toLocaleString().substring(11, 19)
 
-      this.endTime = new Date(this.value2[1]).toLocaleString().substring(11, 19)
+      this.endTime = e.toLocaleString().substring(11, 19)
+      // 判断时间是否重复
+      for (let i = 0; i < this.timeLists.length; i++) {
+        const sList = this.timeLists[i].startTime.split(':')
+        const eList = this.timeLists[i].endTime.split(':')
+        const s1 = new Date(2016, 9, 10, sList[0], sList[1], sList[2]).getTime()
+        const e1 = new Date(2016, 9, 10, eList[0], eList[1], eList[2]).getTime()
+        const s2 = s.getTime()
+        const e2 = e.getTime()
+        if ((s2 >= s1 && s2 <= e1) || (e2 >= s1 && e2 <= e1) || (s2 <= s1 && e2 >= e1)) {
+          this.$message.error('循环时间不能与其他重叠')
+          return
+        }
+      }
+
       // const t1 = []
       // const t2 = []
       // for (var i = 0; i < this.checkDates.length; i++) {
@@ -400,7 +459,7 @@ export default {
         }
       }
       this.dialogFormVisible = false
-      if (this.nowModifyTime !== -1) {
+      if (this.nowModifyTime !== -1) { // 更新
         this.timeLists[this.nowModifyTime] = {
           startTime: this.startTime,
           endTime: this.endTime,
@@ -410,11 +469,13 @@ export default {
             week: this.checkDates,
             date: this.chooseDays
 
-          }
-
+          },
+          programs: this.timeLists[this.nowModifyTime].programs // 节目不变
         }
         this.nowModifyTime = -1
       } else {
+        // 置 0
+        if (this.timeLists.length === 0) this.timeListsSelect = 0
         this.timeLists = [...this.timeLists]
         this.timeLists.push({
           startTime: this.startTime,
@@ -425,8 +486,8 @@ export default {
             week: this.checkDates,
             date: this.chooseDays
 
-          }
-
+          },
+          programs: []
         })
       }
       this.checkDates = []
@@ -451,8 +512,8 @@ export default {
       })
     },
     handleAddTime() {
-    //   this.temp = Object.assign({}, row) // copy obj
-    //   this.temp.timestamp = new Date(this.temp.timestamp)
+      //   this.temp = Object.assign({}, row) // copy obj
+      //   this.temp.timestamp = new Date(this.temp.timestamp)
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -460,7 +521,27 @@ export default {
       })
     },
     handleAddProgram() {
+      if (this.timeListsSelect === -1) {
+        this.$message.error('请先添加循环时间段')
+        return
+      }
       this.dialogProgramVisible = true
+      this.$refs.programSelectTable.clearSelection()
+    },
+    handleProgramSelectionChange(val) {
+      this.programListSelection = val
+    },
+    programDialogSave() {
+      this.dialogProgramVisible = false
+      this.timeLists[this.timeListsSelect].programs.push(...this.programListSelection)
+      console.log(this.timeLists[0])
+    },
+    handleProgramDelete(idx) {
+      this.timeLists[this.timeListsSelect].programs.splice(idx, 1)
+    },
+    changeProgramList(idx) {
+      this.timeListsSelect = idx
+      console.log(this.timeListsSelect)
     },
     checkIndex(i) {
       this.currentLists = [...this.currentLists]
@@ -493,62 +574,70 @@ export default {
 
 <style scoped>
 .left-content {
-    border: 1px solid #d9d9d9;
-    padding: 1rem;
+  border: 1px solid #d9d9d9;
+  padding: 1rem;
 }
+
 .right-content {
-     border: 1px solid #d9d9d9;
-     padding: 1rem;
+  border: 1px solid #d9d9d9;
+  padding: 1rem;
 }
+
 .add {
-    cursor: pointer;
-    margin: 1rem 0;
-    height: 95px;
-    text-align: center;
-    line-height: 95px;
-    border: 2px dashed #dadada;
-    border-radius: 5px;
-    color: #dadada;
+  cursor: pointer;
+  margin: 1rem 0;
+  height: 95px;
+  text-align: center;
+  line-height: 95px;
+  border: 2px dashed #dadada;
+  border-radius: 5px;
+  color: #dadada;
 }
+
 .time-list {
-   margin: 1rem 0;
-   padding: 5px;
-    /* height: 95px; */
-    text-align: left;
-    line-height: 18px;
-    /* line-height: 95px; */
-    border: 2px solid #dadada;
-    color: #1890ff;
-    font-size: 14px;
+  margin: 1rem 0;
+  padding: 5px;
+  /* height: 95px; */
+  text-align: left;
+  line-height: 18px;
+  /* line-height: 95px; */
+  border: 2px solid #dadada;
+  color: #1890ff;
+  font-size: 14px;
 }
+
 .add1 {
-    cursor: pointer;
-    margin: 1rem 0;
-    height: 95px;
-    text-align: center;
-    line-height: 95px;
-    border: 2px dashed #dadada;
-    border-radius: 5px;
-    color: #dadada;
-    width: 150px;
+  cursor: pointer;
+  margin: 1rem 0;
+  height: 95px;
+  text-align: center;
+  line-height: 95px;
+  border: 2px dashed #dadada;
+  border-radius: 5px;
+  color: #dadada;
+  width: 150px;
 
 }
+
 ul {
-    list-style: none;
+  list-style: none;
 
 }
+
 .choose-day ul {
   overflow: hidden;
   width: 301px;
   margin: 0 auto;
   padding: 0;
 }
+
 .choose-day ul li {
   float: left;
   width: 43px;
   text-align: center;
   padding: 3px 0;
 }
+
 .choose-day ul li span {
   width: 24px;
   height: 24px;
@@ -556,13 +645,16 @@ ul {
   display: inline-block;
   cursor: pointer;
 }
-.choose-day ul li span.selected{
- color: #fff;
- background: #1890ff;
+
+.choose-day ul li span.selected {
+  color: #fff;
+  background: #1890ff;
 }
-.icon-container i{
+
+.icon-container i {
   padding-left: 20px;
 }
+
 .icon-container {
   position: absolute;
   right: 0;
