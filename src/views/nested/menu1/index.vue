@@ -522,4 +522,5 @@ export default {
 .input {
   width: 60%;
 }
+
 </style>
