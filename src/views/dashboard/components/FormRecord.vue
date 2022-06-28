@@ -1,7 +1,7 @@
 <template>
-  <div class="app-container">
+  <div class="record-app-container">
     <!-- <el-scrollbar style="height: 100%" class="main-content"> -->
-    <div class="main-container">
+    <div class="record-main-container">
       <div v-for="(item,i) in eventsRecord" :key="i">
         <div class="time">
           {{ item.Time }}
@@ -50,7 +50,7 @@ export default {
 /* .content {
     font-size: 14px;
 } */
-.main-container {
+.record-main-container {
     height: 270px;
     overflow-y: auto;
     overflow-x: hidden;
@@ -68,5 +68,7 @@ export default {
     overflow: auto;
 
 } */
-
+.record-app-container {
+  padding: 24px;
+}
 </style>

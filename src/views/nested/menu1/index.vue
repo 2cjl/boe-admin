@@ -44,9 +44,8 @@
       </el-row>
     </div>
     <el-table
-      :key="tableKey"
       v-loading="listLoading"
-      :data="list"
+      :data="planList"
       border
       fit
       highlight-current-row
@@ -57,59 +56,59 @@
         type="selection"
         width="55"
       />
-      <el-table-column label="缩略图" prop="pic" align="center" width="80" :class-name="getSortClass('id')">
-        <template slot-scope="{row}">
+      <el-table-column label="缩略图" align="center" width="80">
+        <!-- <template slot-scope="{row}">
           <span>{{ row.pic }}</span>
-        </template>
+        </template> -->
       </el-table-column>
-      <el-table-column label="计划名称" width="150px" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.name }}</span>
-        </template>
+      <el-table-column label="计划名称" prop="Name" width="150px" align="center">
+        <!-- <template slot-scope="{row}">
+          <span>{{ row.Name }}</span>
+        </template> -->
         <!-- <template slot-scope="{row}">
           <span>{{ row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template> -->
       </el-table-column>
-      <el-table-column label="计划状态" min-width="150px">
-        <template slot-scope="{row}">
+      <el-table-column label="计划状态" min-width="150px" prop="State">
+        <!-- <template slot-scope="{row}">
           <span class="link-type" @click="handleUpdate(row)">{{ row.title }}</span>
-          <el-tag>{{ row.status }}</el-tag>
-        </template>
+          <el-tag>{{ row.State }}</el-tag>
+        </template> -->
       </el-table-column>
-      <el-table-column label="播放模式" width="110px" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.mode }}</span>
-        </template>
+      <el-table-column label="播放模式" width="110px" align="center" prop="Mode">
+        <!-- <template slot-scope="{row}">
+          <span>{{ row.Mode }}</span>
+        </template> -->
       </el-table-column>
-      <el-table-column label="播放日期" width="80px">
-        <template slot-scope="{row}">
-          <!-- <svg-icon v-for="n in + row.importance" :key="n" icon-class="star" class="meta-item__icon" /> -->
-          <span>{{ row.date }}</span>
-        </template>
+      <el-table-column label="播放日期" width="80px" prop="CreatedAt">
+        <!-- <template slot-scope="{row}"> -->
+        <!-- <svg-icon v-for="n in + row.importance" :key="n" icon-class="star" class="meta-item__icon" /> -->
+        <!-- <span>{{ row.CreatedAt }}</span>
+        </template> -->
       </el-table-column>
-      <el-table-column label="作者" align="center" width="95">
-        <template slot-scope="{row}">
-          <!-- <span v-if="row.pageviews" class="link-type" @click="handleFetchPv(row.pageviews)">{{ row.pageviews }}</span>
+      <el-table-column label="作者" align="center" width="95" prop="Author.Username">
+        <!-- <template slot-scope="{row}"> -->
+        <!-- <span v-if="row.pageviews" class="link-type" @click="handleFetchPv(row.pageviews)">{{ row.pageviews }}</span>
           <span v-else>0</span> -->
-          <span>{{ row.author }}</span>
-        </template>
+        <!-- <span>{{ row.Author.Username }}</span>
+        </template> -->
       </el-table-column>
-      <el-table-column label="审核人" class-name="status-col" width="100">
-        <template slot-scope="{row}">
-          <!-- <el-tag :type="row.status | statusFilter">
+      <el-table-column label="审核人" class-name="status-col" width="100" prop="Author.Username">
+        <!-- <template slot-scope="{row}"> -->
+        <!-- <el-tag :type="row.status | statusFilter">
             {{ row.status }}
           </el-tag> -->
-          <span>{{ row.admin }}</span>
-        </template>
+        <!-- <span>{{ row.Author.Username }}</span>
+        </template> -->
       </el-table-column>
-      <el-table-column label="更新时间" width="110px" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.updateTime }}</span>
-        </template>
+      <el-table-column label="更新时间" width="110px" align="center" prop="UpdatedAt">
+        <!-- <template slot-scope="{row}">
+          <span>{{ row.UpdatedAt }}</span>
+        </template> -->
       </el-table-column>
       <el-table-column label="操作" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <el-button type="text" size="mini" @click="check(row)">
+          <el-button type="text" size="mini" @click="check(row.ID)">
             详情
           </el-button>
           <el-button type="text" disabled size="mini" @click="handleUpdate(row)">
@@ -142,73 +141,67 @@
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <el-dialog :model="choosePlanList" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-tabs v-model="activeName" type="card">
         <el-tab-pane label="计划详情" name="first">
           <el-row>
             <el-col :span="12">
               <span>
-                计划名称：{{ list[0].name }}
+                计划名称：{{ choosePlanList.Name }}
               </span>
+              <template slot-scope="{row}">
+                <span>{{ row.Name }}</span>
+              </template>
             </el-col>
-            <el-col :span="12"><span>播放日期：{{ list[0].date }}</span></el-col>
+            <el-col :span="12">
+              <span>播放日期：{{ choosePlanList.StartDate }}</span>
+              <template slot-scope="{row}">
+                <span>{{ row.CreatedAt }}</span>
+              </template>
+            </el-col>
           </el-row>
           <el-row>
             <el-col :span="12">
               <span>
-                播放模式：{{ list[0].mode }}
+                播放模式：{{ choosePlanList.Mode }}
               </span>
+              <template slot-scope="{row}">
+                <span>{{ row.Mode }}</span>
+              </template>
             </el-col>
-            <el-col :span="12"><span>播放策略：</span></el-col>
+            <el-col :span="12"><span>播放策略：替换</span></el-col>
           </el-row>
           <el-row>
             <el-col :span="12">
               <span>
-                多屏同步：
+                多屏同步：打开
               </span>
             </el-col>
-            <el-col :span="12"><span>发布状态：</span></el-col>
+            <el-col :span="12"><span>发布状态：{{ choosePlanList.State }}</span></el-col>
           </el-row>
           <el-col>
-            <span>创建时间：</span>
+            <span>创建时间：{{ choosePlanList.CreatedAt }}</span>
           </el-col>
           <el-col>
-            <div>播放时段：hsjsj<br>
-              循环类型：<br>
-              循环时间段：<br>
+            <div>播放时段：{{ choosePlanList.Mode }}<br>
+              <!-- 循环类型：{{ choosePlanList.PlayPeriods[0].LoopMode }}<br> -->
+              循环时间段：
+              <!-- <div v-for="item in choosePlanList.PlayPeriods" :key="item">
+                {{ item }}
+              </div> -->
             </div>
 
           </el-col>
           <el-col>
-            <div>已选节目：</div>
+            <div>已选节目：
+              <!-- <div v-for="item in choosePlanList.PlayPeriods[0].Shows" :key="item">
+                {{ item.Name }}
+              </div> -->
+            </div>
           </el-col>
           <el-col>
             <div>原因：</div>
           </el-col>
-          <!-- <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-            <el-form-item label="Type" prop="type">
-              <el-select v-model="temp.type" class="filter-item" placeholder="Please select">
-                <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="Date" prop="timestamp">
-              <el-date-picker v-model="temp.timestamp" type="datetime" placeholder="Please pick a date" />
-            </el-form-item>
-            <el-form-item label="Title" prop="title">
-              <el-input v-model="temp.title" />
-            </el-form-item>
-            <el-form-item label="Status">
-              <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
-                <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="Imp">
-              <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;" />
-            </el-form-item>
-            <el-form-item label="Remark">
-              <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="Please input" />
-            </el-form-item>
-          </el-form> -->
         </el-tab-pane>
         <el-tab-pane label="设备详情" name="second">设备详情</el-tab-pane>
       </el-tabs>
@@ -217,12 +210,8 @@
         <el-button @click="dialogFormVisible = false">
           返回
         </el-button>
-        <!-- <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
-          Confirm
-        </el-button> -->
       </div>
     </el-dialog>
-
     <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
       <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
         <el-table-column prop="key" label="Channel" />
@@ -240,7 +229,7 @@
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-
+import { getPlanList, getPlanDetailList } from '@/api/plan'
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' },
   { key: 'US', display_name: 'USA' },
@@ -275,30 +264,32 @@ export default {
     return {
       tableKey: 0,
       activeName: 'first',
-      list: [
-        {
-          pic: '1.jpg',
-          name: 'xxx',
-          status: '发布中',
-          mode: '按时段播放',
-          date: '2022-07-03',
-          author: 'catman',
-          admin: 'catmain',
-          updateTime: '2022-06-24 10:16:17'
-        },
-        {
-          pic: '1.jpg',
-          name: 'xxx',
-          status: '发布中',
-          mode: '按时段播放',
-          date: '2022-07-03',
-          author: 'catman',
-          admin: 'catmain',
-          updateTime: '2022-06-24 10:16:17'
-        }
-      ],
+      planList: [],
+      choosePlanList: {},
+      // list: [
+      //   {
+      //     pic: '1.jpg',
+      //     name: 'xxx',
+      //     status: '发布中',
+      //     mode: '按时段播放',
+      //     date: '2022-07-03',
+      //     author: 'catman',
+      //     admin: 'catmain',
+      //     updateTime: '2022-06-24 10:16:17'
+      //   },
+      //   {
+      //     pic: '1.jpg',
+      //     name: 'xxx',
+      //     status: '发布中',
+      //     mode: '按时段播放',
+      //     date: '2022-07-03',
+      //     author: 'catman',
+      //     admin: 'catmain',
+      //     updateTime: '2022-06-24 10:16:17'
+      //   }
+      // ],
       input1: 'hh',
-      total: 10,
+      total: 0,
       listLoading: true,
       listQuery: {
         page: 1,
@@ -359,9 +350,23 @@ export default {
   created() {
     this.getList()
   },
+  // mounted() {
+  //   this.query()
+  // },
   methods: {
+    // query() {
+    //   getPlanList(0, 10).then((res) => {
+    //     this.planList = res.data
+    //     console.log(this.planList)
+    //   })
+    // },
     getList() {
       this.listLoading = true
+      getPlanList(0, 10).then((res) => {
+        this.planList = res.data.plans
+        this.total = res.data.total
+        console.log(this.planList)
+      })
       // fetchList(this.listQuery).then(response => {
       //   this.list = response.data.items
       //   this.total = response.data.total
@@ -471,8 +476,14 @@ export default {
       })
       this.list.splice(index, 1)
     },
-    check(row) {
+    check(id) {
       this.dialogFormVisible = true
+      getPlanDetailList(id).then((res) => {
+        this.choosePlanList = res.data.plan
+        console.log(this.choosePlanList)
+      })
+
+      // console.log(row)
     },
     handleFetchPv(pv) {
       // fetchPv(pv).then(response => {

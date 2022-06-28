@@ -13,6 +13,9 @@
           <div class="card-panel-text">
             设备数量
           </div>
+          <div class="card-panel-num">
+            {{ countList.DeviceCnt }}
+          </div>
           <!-- <count-to :start-val="0" :end-val="102400" :duration="2600" class="card-panel-num" /> -->
         </div>
       </div>
@@ -26,6 +29,9 @@
         <div class="card-panel-description">
           <div class="card-panel-text">
             节目数量
+          </div>
+          <div class="card-panel-num">
+            {{ countList.ShowCnt }}
           </div>
           <!-- <count-to :start-val="0" :end-val="81212" :duration="3000" class="card-panel-num" /> -->
         </div>
@@ -41,6 +47,9 @@
           <div class="card-panel-text">
             计划数量
           </div>
+          <div class="card-panel-num">
+            {{ countList.PlanCnt }}
+          </div>
           <!-- <count-to :start-val="0" :end-val="9280" :duration="3200" class="card-panel-num" /> -->
         </div>
       </div>
@@ -50,12 +59,27 @@
 
 <script>
 // import CountTo from 'vue-count-to'
-
+import { getCount } from '@/api/home'
 export default {
   components: {
     // CountTo
   },
+  data() {
+    return {
+      countList: {}
+
+    }
+  },
+  mounted() {
+    this.query()
+  },
   methods: {
+    query() {
+      getCount().then((res) => {
+        this.countList = res.data
+        console.log(this.countList)
+      })
+    },
     handleSetLineChartData(type) {
       this.$emit('handleSetLineChartData', type)
     }
@@ -96,7 +120,7 @@ export default {
       }
 
       .icon-message {
-        background: #36a3f7;
+        background: #E6A23C;
       }
 
       .icon-money {

@@ -11,20 +11,20 @@
         <el-input v-model="form.name" />
       </el-form-item>
       <el-form-item label="播放策略">
-        <el-radio-group v-model="form.resource">
+        <el-radio-group v-model="form.policy">
           <el-radio label="替换" />
           <el-radio label="插播" />
         </el-radio-group>
       </el-form-item>
       <el-form-item label="播放模式">
-        <el-radio-group v-model="form.resource">
+        <el-radio-group v-model="form.mode">
           <el-radio label="时段播放" />
           <el-radio label="持续播放" />
         </el-radio-group>
         <span>（打开此功能后会使播放同一计划的设备画面保持统一）</span>
       </el-form-item>
       <el-form-item label="多屏同步">
-        <el-radio-group v-model="form.resource">
+        <el-radio-group v-model="form.syn">
           <el-radio label="打开" />
           <el-radio label="关闭" />
         </el-radio-group>
@@ -36,7 +36,7 @@
         ]"
       >
         <el-date-picker
-          v-model="value1"
+          v-model="form.playTime"
           type="daterange"
           range-separator="至"
           start-placeholder="开始日期"
@@ -92,20 +92,30 @@
         <!-- 添加节目按钮 -->
         <el-col :span="16">
           <div class="right-content">
-            <div>
+            <div class="program-list">
               <div v-if="timeListsSelect !== -1">
                 <div
                   v-for="(program, idx) in timeLists[timeListsSelect].programs"
+                  :key="idx"
                   class="program-card"
                 >
-                  <el-image
-                    style="height: 100px; width: 65px"
-                    :src="program.pic"
-                  />
-                  <div>{{ program.name }}</div>
-                  <div>{{ program.ratio }}</div>
-                  <div>{{ program.time }}</div>
-                  <i class="el-icon-close" @click="handleProgramDelete(idx)" />
+                  <div>
+                    <el-image
+
+                      :src="program.pic"
+                      class="img-container"
+                    />
+                    <div class="mask">
+                      <el-row>
+                        <el-col :span="20"><div class="name">{{ program.name }}</div></el-col>
+                        <el-col :span="4"><i class="el-icon-close" @click="handleProgramDelete(idx)" /></el-col>
+                      </el-row>
+                      <el-row>
+                        <el-col :span="16"><div>{{ program.ratio }}</div></el-col>
+                        <el-col :span="8"><div>{{ program.time }}</div></el-col>
+                      </el-row>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="add1" @click="handleAddProgram">
@@ -123,7 +133,7 @@
       <el-form-item>
         <el-button @click="$router.go(-1)">取消</el-button>
         <el-button>保存</el-button>
-        <el-button type="primary" @click="$router.push('device')">下一步</el-button>
+        <el-button type="primary" @click="nextStep(form)">下一步</el-button>
       </el-form-item>
 
       <el-dialog title="设置播放时间段" :visible.sync="dialogFormVisible">
@@ -290,13 +300,25 @@ export default {
     return {
       form: {
         name: '',
-        region: '',
-        date1: '',
-        date2: '',
-        delivery: false,
-        type: [],
-        resource: '',
-        desc: ''
+        policy: '',
+        mode: '',
+        syn: '',
+        playTime: '',
+        PlayPeriods: [
+          { LoopMode: '',
+            // startTime: this.timeLists.startTime,
+            // endTime: this.timeLists.endTime,
+            // circlePeriod: this.timeLists.period,
+            shows: [
+              {
+                name: '',
+                Author: '',
+                Duration: ''
+
+              }
+            ]
+          }
+        ]
       },
       ratio: '',
       input1: '',
@@ -373,6 +395,10 @@ export default {
   computed: {},
 
   methods: {
+    nextStep(form) {
+      // this.router.push('device')
+      console.log(form)
+    },
     handleEdit(idx) {
       this.nowModifyTime = idx
       const time = this.timeLists[idx]
@@ -576,11 +602,14 @@ export default {
 .left-content {
   border: 1px solid #d9d9d9;
   padding: 1rem;
+  height: 480px;
 }
 
 .right-content {
   border: 1px solid #d9d9d9;
   padding: 1rem;
+  height: 480px;
+  /* float: left; */
 }
 
 .add {
@@ -609,7 +638,7 @@ export default {
 .add1 {
   cursor: pointer;
   margin: 1rem 0;
-  height: 95px;
+  height: 202px;
   text-align: center;
   line-height: 95px;
   border: 2px dashed #dadada;
@@ -659,5 +688,40 @@ ul {
   position: absolute;
   right: 0;
   top: 0;
+}
+.program-card {
+  position: relative;
+  width: 120px;
+  height: 202px;
+  float: left;
+  margin-right: 1rem;
+  margin-bottom: 1rem;
+}
+.img-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  object-fit: cover;
+}
+.mask {
+  position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    font-size: 14px;
+    color: #ccc;
+    height: 4.5rem;
+    background: rgba(0,0,0,.4);
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+
+}
+.program-list {
+  display: flex;
 }
 </style>

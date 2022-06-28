@@ -8,10 +8,31 @@ export function groupCount() {
   })
 }
 
-export function getEventsRecord(token) {
+export function getEventsRecord() {
   return request({
     url: '/home/events',
-    method: 'get',
-    params: { token }
+    method: 'get'
   })
 }
+
+export function getCount() {
+  return request({
+    url: '/home/count',
+    method: 'get'
+  })
+}
+
+export function getDeviceStatus() {
+  return request({
+    url: '/home/device/state',
+    method: 'get'
+  })
+}
+
+export function getGroupCount() {
+  return request({
+    url: '/home/group/count',
+    method: 'get'
+  })
+}
+

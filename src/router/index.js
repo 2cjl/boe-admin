@@ -136,15 +136,12 @@ export const constantRoutes = [
   {
     path: 'external-link',
     component: Layout,
-<<<<<<< Updated upstream
-=======
     redirect: '/device/menu1',
     name: 'Device',
     meta: {
       title: '设备管理',
       icon: 'link'
     },
->>>>>>> Stashed changes
     children: [
       {
         path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
