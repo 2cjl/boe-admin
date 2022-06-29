@@ -1,49 +1,47 @@
 <template>
   <div class="app-container">
-    <el-form ref="form" :model="form" label-width="120px">
-      <el-form-item label="Activity name">
-        <el-input v-model="form.name" />
-      </el-form-item>
-      <el-form-item label="Activity zone">
-        <el-select v-model="form.region" placeholder="please select your zone">
-          <el-option label="Zone one" value="shanghai" />
-          <el-option label="Zone two" value="beijing" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="Activity time">
-        <el-col :span="11">
-          <el-date-picker v-model="form.date1" type="date" placeholder="Pick a date" style="width: 100%;" />
+    <div class="form-container" style="height: 70px">
+      <el-row>
+        <el-col :span="8">
+          <el-row style="margin-bottom: 10px">
+            <span>节目名称：</span>
+            <el-input v-model="input1" placeholder="请输入设备名称" suffix-icon="el-icon-search" size="medium" class="input"/>
+          </el-row>
         </el-col>
-        <el-col :span="2" class="line">-</el-col>
-        <el-col :span="11">
-          <el-time-picker v-model="form.date2" type="fixed-time" placeholder="Pick a time" style="width: 100%;" />
+        <el-col :span="8">
+          <el-row style="margin-bottom: 10px">
+            <span>分辨率：</span>
+            <el-select v-model="value" placeholder="请选择">
+              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"/>
+            </el-select>
+          </el-row>
         </el-col>
-      </el-form-item>
-      <el-form-item label="Instant delivery">
-        <el-switch v-model="form.delivery" />
-      </el-form-item>
-      <el-form-item label="Activity type">
-        <el-checkbox-group v-model="form.type">
-          <el-checkbox label="Online activities" name="type" />
-          <el-checkbox label="Promotion activities" name="type" />
-          <el-checkbox label="Offline activities" name="type" />
-          <el-checkbox label="Simple brand exposure" name="type" />
-        </el-checkbox-group>
-      </el-form-item>
-      <el-form-item label="Resources">
-        <el-radio-group v-model="form.resource">
-          <el-radio label="Sponsor" />
-          <el-radio label="Venue" />
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="Activity form">
-        <el-input v-model="form.desc" type="textarea" />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="onSubmit">Create</el-button>
-        <el-button @click="onCancel">Cancel</el-button>
-      </el-form-item>
-    </el-form>
+        <el-col :span="8">
+          <el-row type="flex" justify="end" style="margin-bottom: -15px">
+            <div>
+              <el-button plain>重置</el-button>
+              <el-button type="primary" @click="onSubmit">查询</el-button>
+            </div>
+          </el-row>
+        </el-col>
+      </el-row>
+    </div>
+    <el-table :data="list" border style="width: 100%">
+      <el-table-column type="selection" width="55"/>
+      <el-table-column label="缩略图"></el-table-column>
+      <el-table-column label="节目名称"></el-table-column>
+      <el-table-column label="分辨率"></el-table-column>
+      <el-table-column label="节目时长"></el-table-column>
+      <el-table-column label="更新时间"></el-table-column>
+      <el-table-column fixed="right" label="操作">
+        <template v-slot="{row,$index}">
+          <el-button type="primary" size="mini" @click="check(row)">详情</el-button>
+          <el-button type="primary" size="mini" @click="">编辑</el-button>
+          <el-button v-if="row.status!=='deleted'" size="mini" type="danger" @click="">删除
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
   </div>
 </template>
 
@@ -51,23 +49,20 @@
 export default {
   data() {
     return {
-      form: {
-        name: '',
-        region: '',
-        date1: '',
-        date2: '',
-        delivery: false,
-        type: [],
-        resource: '',
-        desc: ''
-      }
+      formInline: {
+        username: '',
+        organization: ''
+      },
+      value: '',
+      options: '',
+      input1: ''
     }
   },
   methods: {
-    onSubmit() {
+    async onSubmit() {
       this.$message('submit!')
     },
-    onCancel() {
+    async onCancel() {
       this.$message({
         message: 'cancel!',
         type: 'warning'
@@ -78,8 +73,26 @@ export default {
 </script>
 
 <style scoped>
-.line{
+.line {
   text-align: center;
+}
+
+.app-container {
+  background-color: rgb(240, 242, 245);
+}
+
+.el-row {
+  margin-bottom: 20px;
+}
+
+.form-container, .btn-container {
+  background: #fff;
+  padding: 16px 20px;
+  margin-bottom: 15px;
+}
+
+.input {
+  width: 60%;
 }
 </style>
 

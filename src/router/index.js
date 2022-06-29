@@ -80,12 +80,19 @@ export const constantRoutes = [
   {
     path: '/form',
     component: Layout,
+    redirect: '/form/programme',
+    name: 'Form',
+    alwaysShow: true,
+    meta: {
+      title: '节目制作与发布',
+      icon: 'form'
+    },
     children: [
       {
         path: 'index',
         name: 'Form',
         component: () => import('@/views/form/index'),
-        meta: { title: '节目制作与发布', icon: 'form' }
+        meta: { title: '发布节目', icon: 'form' }
       }
     ]
   },
@@ -129,15 +136,12 @@ export const constantRoutes = [
   {
     path: '/device',
     component: Layout,
-<<<<<<< Updated upstream
-=======
     redirect: '/device/menu1',
     name: 'Device',
     meta: {
       title: '设备管理',
       icon: 'link'
     },
->>>>>>> Stashed changes
     children: [
       {
         path: 'menu1',

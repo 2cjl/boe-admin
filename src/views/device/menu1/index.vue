@@ -4,7 +4,7 @@
       <el-row>
         <el-col :span="8">
           <el-row style="margin-bottom: 10px">
-            <span>设备名称：</span>
+            <span>设备名称： </span>
             <el-input v-model="input1" placeholder="请输入设备名称" suffix-icon="el-icon-search" size="medium" class="input"/>
           </el-row>
         </el-col>
@@ -67,10 +67,10 @@
           </el-row>
         </el-col>
         <el-col :span="24">
-          <el-row type="flex" justify="end" style="margin-bottom: -15px">
+          <el-row type="flex" justify="end">
             <div>
               <el-button plain>重置</el-button>
-              <el-button type="primary">查询</el-button>
+              <el-button type="primary" >查询</el-button>
             </div>
           </el-row>
         </el-col>
@@ -78,6 +78,7 @@
     </div>
 
     <el-table :data="tableData" border style="width: 100%">
+      <el-table-column type="selection" width="55"/>
       <el-table-column prop="name" label="设备名称"></el-table-column>
       <el-table-column prop="organization" label="所属机构"></el-table-column>
       <el-table-column prop="group" label="所属分组"></el-table-column>

@@ -5,14 +5,15 @@
         <el-col :span="8">
           <el-row>
             <span>账户名：</span>
-            <el-input class="input" v-model="formInline.username" placeholder="请输入账户名称"></el-input>
+            <el-input class="input" v-model="formInline.username" suffix-icon="el-icon-search" placeholder="请输入账户名称"
+            ></el-input>
           </el-row>
         </el-col>
         <el-col :span="8">
           <el-row>
             <span>所属机构：</span>
-            <el-select v-model="formInline.organization">
-              <el-option label="城院罗老师测试" value="shanghai"></el-option>
+            <el-select v-model="formInline.organization" placeholder="">
+              <el-option label="test_o" value="shanghai"></el-option>
             </el-select>
           </el-row>
         </el-col>
@@ -20,7 +21,7 @@
           <el-row type="flex" justify="end" style="margin-bottom: -15px">
             <div>
               <el-button plain>重置</el-button>
-              <el-button type="primary" @click="onSubmit">查询</el-button>
+              <el-button type="primary" @click="">查询</el-button>
               <el-button class="filter-item" style="margin-left: 10px;" type="primary" @click="handleCreate">新建用户
               </el-button>
             </div>
@@ -28,38 +29,77 @@
         </el-col>
       </el-row>
     </div>
-    <el-table :data="tableData" border style="width: 100%">
-      <el-table-column width="100" prop="username" label="账户名"></el-table-column>
-      <el-table-column prop="organization" label="所属机构"></el-table-column>
-      <el-table-column width="100" prop="state" label="状态">
-        <el-tag type="success" effect="dark" size="medium">
-          已启用
-        </el-tag>
+    <el-table :data="list" border style="width: 100%" v-loading="listLoading" :key="tableKey" highlight-current-row>
+      <el-table-column width="100" prop="username" label="账户名">
+        <template v-slot="{row}">
+          <span>{{ row.Username }}</span>
+        </template>
       </el-table-column>
-      <el-table-column prop="phone" label="手机号"></el-table-column>
-      <el-table-column prop="email" label="邮箱"></el-table-column>
-      <el-table-column prop="updated_at" label="更新时间"></el-table-column>
+      <el-table-column prop="organization" label="所属机构">
+        <template v-slot="{row}">
+          <span>{{ row.Organization.Name }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column width="100" prop="state" label="状态">
+        <template v-slot="{row}">
+          <span v-if="row.Status ==='启用'">
+            <el-tag type="success" effect="dark" size="medium">
+            已启用
+          </el-tag>
+          </span>
+          <span v-else-if="row.Status ==='正常'">
+            <el-tag type="success" effect="dark" size="medium">
+            已启用
+          </el-tag>
+          </span>
+          <span v-else-if="row.Status ==='停用'">
+            <el-tag type="danger" effect="dark" size="medium">
+            已停用
+          </el-tag>
+          </span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="phone" label="手机号">
+        <template v-slot="{row}">
+          <span>{{ row.Phone }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="email" label="邮箱">
+        <template v-slot="{row}">
+          <span>{{ row.Email }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="updated_at" label="更新时间">
+        <template v-slot="{row}">
+          <span>{{ row.CreatedAt }}</span>
+        </template>
+      </el-table-column>
       <el-table-column fixed="right" label="操作">
         <template v-slot="{row,$index}">
-          <el-button type="danger" size="mini">停用</el-button>
+          <el-button type="danger" size="mini" @click="handleStop(row)">停用</el-button>
           <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
-          <el-button v-if="row.status!=='deleted'" size="mini" type="danger" @click="handleDelete(row,$index)">删除
+          <el-button size="mini" type="danger" @click="handleDelete(row,$index)">删除
           </el-button>
         </template>
       </el-table-column>
     </el-table>
 
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit"
+                @pagination="getList"
+    />
+
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :model="form" :rules="rules" label-width="100px">
+      <el-form ref="dataForm" :model="form" :rules="rules" label-position="left" label-width="100px">
         <el-form-item label="账户名" prop="username">
-          <el-input v-model="form.username"></el-input>
+          <el-input v-model="form.username">
+          </el-input>
         </el-form-item>
         <el-form-item label="密码" prop="passwd">
           <el-input placeholder="请输入密码" v-model="form.passwd" show-password></el-input>
         </el-form-item>
-        <el-form-item label="所属机构" prop="passwd">
-          <el-select v-model="form.region" placeholder="请选择活动区域">
-            <el-option label="城院罗老师测试" value="shanghai"></el-option>
+        <el-form-item label="所属机构">
+          <el-select v-model="form.organization" placeholder="请选择所属机构">
+            <el-option label="test_o" value="1"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="邮箱" prop="email">
@@ -71,7 +111,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -79,7 +119,8 @@
 
 <script>
 import waves from '@/directive/waves' // waves directive
-import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import Pagination from '@/components/Pagination'
+import { createUser, delUser, fetchUserList, putStop, updateUser } from '@/api/user' // secondary package based on el-pagination
 
 let validPassword = (rule, value, callback) => {
   let reg = /^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{4,20}$/
@@ -103,6 +144,7 @@ let checkEmail = (rule, value, callback) => {
   }, 100)
 }
 export default {
+  inject: ['reload'],
   name: 'ComplexTable',
   components: { Pagination },
   directives: { waves },
@@ -112,28 +154,15 @@ export default {
         username: '',
         organization: ''
       },
+      total: 0,
+      tableKey: 0,
       temp: {
-        id: undefined,
-        importance: 1,
         username: '',
-        timestamp: new Date(),
-        title: '',
-        type: '',
-        status: 'published'
+        passwd: '',
+        phone: '',
+        email: '',
+        organization: ''
       },
-      tableData: [{
-        username: 'luorladd1',
-        organization: '城院罗老师测试',
-        phone: '12345',
-        email: '12345@qq.com',
-        updated_at: '2016-05-04'
-      }, {
-        username: 'luorladd2',
-        organization: '城院罗老师测试',
-        phone: '12345',
-        email: '12345@qq.com',
-        updated_at: '2016-05-04'
-      }],
       dialogTableVisible: false,
       dialogFormVisible: false,
       form: {
@@ -141,7 +170,20 @@ export default {
         passwd: '',
         phone: '',
         email: '',
-        organization: ''
+        organization: 1,
+        realName: '管理员',
+        status: '启用'
+      },
+      list: null,
+      users: null,
+      listLoading: true,
+      listQuery: {
+        page: 1,
+        limit: 5,
+        importance: undefined,
+        title: undefined,
+        type: undefined,
+        sort: '+id'
       },
       dialogStatus: '',
       textMap: {
@@ -168,52 +210,111 @@ export default {
     this.getList()
   },
   methods: {
-    getList() {
+    async getList() {
       this.listLoading = true
-      fetchList(this.listQuery).then(response => {
-        this.list = response.data.items
-        this.total = response.data.total
-
-        // Just to simulate the time of the request
+      fetchUserList(this.listQuery).then(response => {
+        this.list = response.users
+        this.total = response.total
+        // console.log(response)
         setTimeout(() => {
           this.listLoading = false
         }, 1.5 * 1000)
       })
     },
-    resetTemp() {
-      this.temp = {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        status: 'published',
-        type: ''
+    async resetForm() {
+      this.form = {
+        username: '',
+        passwd: '',
+        phone: '',
+        email: '',
+        organization: 1,
+        realName: '管理员',
+        status: '启用'
       }
     },
-    handleCreate() {
-      this.resetTemp()
-      this.dialogStatus = 'create'
-      this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
+
+    //停用用户
+    async handleStop(row) {
+      await putStop({
+        userId: row.ID.toString()
       })
+      this.$notify({
+        title: 'Success',
+        message: '成功停用账户',
+        type: 'success',
+        duration: 2000
+      })
+      this.reload()
     },
-    handleUpdate(row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.temp.timestamp = new Date(this.temp.timestamp)
+
+    //更新用户
+    async handleUpdate(row) {
+      this.form = Object.assign({}, row) // copy obj
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
       })
     },
-    updateData() {
+    async updateData() {
+      await this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          let form1 = Object.assign({}, this.form)
+          form1.organization = parseInt(form1.organization)
+          form1.userId = form1.ID.toString()
+          let form2 = {
+            userId: form1.userId,
+            username: form1.username
+          }
+          console.log(form2)
+          updateUser(form2).then(() => {
+            this.dialogFormVisible = false
+            this.$notify({
+              title: 'Success',
+              message: '成功更新账户',
+              type: 'success',
+              duration: 2000
+            })
+          })
+        }
+        this.reload()
+      })
     },
-    handleDelete(row, index) {
+
+    //新建用户
+    async handleCreate() {
+      await this.resetForm()
+      this.dialogStatus = 'create'
+      this.dialogFormVisible = true
+    },
+    async createData() {
+      await this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          let form1 = Object.assign({}, this.form)
+          form1.organization = parseInt(form1.organization)
+          console.log(form1)
+          createUser(form1).then(() => {
+            this.dialogFormVisible = false
+            this.$notify({
+              title: 'Success',
+              message: '成功创建账户',
+              type: 'success',
+              duration: 2000
+            })
+          })
+        }
+        this.reload()
+      })
+    },
+
+    //删除用户
+    async handleDelete(row, index) {
+      await delUser({
+        userId: row.ID.toString()
+      })
       this.$notify({
         title: 'Success',
-        message: 'Delete Successfully',
+        message: '成功删除账户',
         type: 'success',
         duration: 2000
       })
@@ -228,10 +329,6 @@ export default {
   background-color: rgb(240, 242, 245);
 }
 
-.el-row {
-  margin-bottom: 20px;
-}
-
 .form-container, .btn-container {
   background: #fff;
   padding: 16px 20px;
@@ -242,17 +339,4 @@ export default {
   width: 60%;
 }
 
-.el-col {
-  border-radius: 4px;
-}
-
-.grid-content {
-  border-radius: 4px;
-  min-height: 36px;
-}
-
-.row-bg {
-  padding: 10px 0;
-  background-color: #f9fafc;
-}
 </style>

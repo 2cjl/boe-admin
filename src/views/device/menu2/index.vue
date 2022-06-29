@@ -1,4 +1,4 @@
-<template xmlns="http://www.w3.org/1999/html">
+<template>
   <div>
     <div class="app-container">
       <div class="form-container">
@@ -36,6 +36,7 @@
         </el-row>
       </div>
       <el-table :data="list" border style="width: 100%">
+        <el-table-column type="selection" width="55"/>
         <el-table-column prop="id" label="分组ID">
           <template v-slot="{row}">
             <span>{{ row.ID }}</span>
@@ -46,12 +47,14 @@
             <span>{{ row.Name }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="organization" label="所属机构">
+        <el-table-column prop="organization" label="所属机构" width="200">
           <template v-slot="{row}">
             <span>{{ row.OrganizationID }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="number" label="设备数量"></el-table-column>
+        <el-table-column prop="number" label="设备数量" width="100">
+
+        </el-table-column>
         <el-table-column prop="describe" label="描述">
           <template v-slot="{row}">
             <span>{{ row.Describe }}</span>
@@ -60,8 +63,8 @@
         <el-table-column fixed="right" label="操作">
           <template v-slot="{row,$index}">
             <el-button type="primary" size="mini" @click="check(row)">详情</el-button>
-            <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
-            <el-button v-if="row.status!=='deleted'" size="mini" type="danger" @click="handleDelete(row,$index)">删除
+            <el-button type="primary" size="mini" @click="">编辑</el-button>
+            <el-button v-if="row.status!=='deleted'" size="mini" type="danger" @click="">删除
             </el-button>
           </template>
         </el-table-column>
@@ -70,47 +73,7 @@
 
     <el-dialog title="设备详情" :visible.sync="dialogTableVisible">
       <el-tabs v-model="activeName" type="card">
-        <el-tab-pane label="计划详情" name="first">
-          <el-row>
-            <el-col :span="12">
-              <span>
-                计划名称：{{ list[0].name }}
-              </span>
-            </el-col>
-            <el-col :span="12"><span>播放日期：{{ list[0].date }}</span></el-col>
-          </el-row>
-          <el-row>
-            <el-col :span="12">
-              <span>
-                播放模式：{{ list[0].mode }}
-              </span>
-            </el-col>
-            <el-col :span="12"><span>播放策略：</span></el-col>
-          </el-row>
-          <el-row>
-            <el-col :span="12">
-              <span>
-                多屏同步：
-              </span>
-            </el-col>
-            <el-col :span="12"><span>发布状态：</span></el-col>
-          </el-row>
-          <el-col>
-            <span>创建时间：</span>
-          </el-col>
-          <el-col>
-            <div>播放时段：hsjsj<br>
-              循环类型：<br>
-              循环时间段：<br>
-            </div>
-          </el-col>
-          <el-col>
-            <div>已选节目：</div>
-          </el-col>
-          <el-col>
-            <div>原因：</div>
-          </el-col>
-        </el-tab-pane>
+        <el-tab-pane label="计划详情" name="first">计划详情</el-tab-pane>
         <el-tab-pane label="设备详情" name="second">设备详情</el-tab-pane>
       </el-tabs>
 
@@ -176,8 +139,6 @@
                       @pagination="getList"
           />
         </el-tabs>
-        <!-- <el-button @click="">单个设备</el-button>
-        <el-button>分组设备</el-button> -->
       </el-row>
       <div class="btn-container">
 
@@ -198,6 +159,7 @@ export default {
   name: 'index',
   data() {
     return {
+      activeName: 'first',
       tableKey: 0,
       list: null,
       total: 0,
@@ -228,10 +190,10 @@ export default {
     this.getList()
   },
   methods: {
-    getList() {
+    async getList() {
       this.listLoading = true
       fetchDeviceList(this.listQuery).then(response => {
-        this.list = response.data
+        this.list = response.data.groups
         console.log(response)
         // this.total = response.data.total
 
@@ -241,12 +203,12 @@ export default {
         }, 1.5 * 1000)
       })
     },
-    handleCreate() {
+    async handleCreate() {
       this.dialogFormVisible = true
     },
-    check(row) {
+    async check(row) {
       this.dialogTableVisible = true
-    },
+    }
   }
 }
 </script>

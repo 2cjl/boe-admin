@@ -8,25 +8,42 @@ export function login(data) {
   })
 }
 
-export function fetchList(query) {
+export function fetchUserList(query) {
   return request({
-    url: '/vue-element-admin/article/list',
+    url: '/user/get_users',
     method: 'get',
     params: query
   })
 }
 
-export function getInfo(token) {
+export function putStop(data) {
   return request({
-    url: '/vue-admin-template/user/info',
-    method: 'get',
-    params: { token }
+    url: '/user/ban_user',
+    method: 'put',
+    data
   })
 }
 
-export function logout() {
+export function delUser(data) {
   return request({
-    url: '/vue-admin-template/user/logout',
-    method: 'post'
+    url: '/user/delete_user',
+    method: 'delete',
+    data
+  })
+}
+
+export function updateUser(data) {
+  return request({
+    url: '/user/update_account',
+    method: 'put',
+    data
+  })
+}
+
+export function createUser(data) {
+  return request({
+    url: '/user/create_account',
+    method: 'post',
+    data
   })
 }
