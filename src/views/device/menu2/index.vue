@@ -5,19 +5,13 @@
         <el-row>
           <el-col :span="8">
             <span>分组名称：</span>
-            <el-input v-model="input1" placeholder="请输入设备名称" suffix-icon="el-icon-search" size="medium" class="input" />
-          </el-col>
-          <el-col :span="8">
-            <span>所属机构：</span>
-            <el-select v-model="value" placeholder="请选择">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
+            <el-input v-model="searchInput" placeholder="请输入设备名称" suffix-icon="el-icon-search" size="medium" class="input" />
           </el-col>
           <el-col :span="8">
             <el-row type="flex" justify="end">
               <div>
-                <el-button plain>重置</el-button>
-                <el-button type="primary">查询</el-button>
+                <el-button plain @click="searchInput = ''">重置</el-button>
+                <el-button type="primary" @click="search()">查询</el-button>
                 <el-button type="primary" @click="handleCreate">新建分组</el-button>
               </div>
             </el-row>
@@ -187,6 +181,7 @@ export default {
       deviceCnt: null,
       total: 0,
       listLoading: true,
+      searchInput: '',
       dialogStatus: '',
       textMap: {
         update: '编辑分组',
@@ -226,6 +221,10 @@ export default {
     this.getList()
   },
   methods: {
+    search() {
+
+    },
+
     async getList() {
       this.listLoading = true
       getAllGroup(this.listQuery).then(response => {

@@ -154,8 +154,8 @@
               <i class="el-icon-picture-outline" />
             </div>
           </el-image>
-          <el-image v-else style="width: 500px" />
-          <el-button type="primary" @click="capture()">截屏</el-button>
+          <el-image v-else :src="screenshotUrl" style="width: 100%" />
+          <el-button type="primary" :loading="isScreenLoading" @click="capture()">截屏</el-button>
         </el-tab-pane>
         <el-tab-pane label="调节亮度" name="second">
           <div class="block">
@@ -349,7 +349,7 @@ export default {
           const interval = setInterval(() => {
             getLastScreenshot(this.form.id).then((res) => {
               if (res.code === 200) {
-                this.screenshotUrl = 'data:image/png;base64,' + res.data
+                this.screenshotUrl = res.data
                 this.isScreenLoading = false
                 clearInterval(interval)
               }
@@ -357,7 +357,7 @@ export default {
           }, 250)
           setTimeout(() => {
             if (interval != null) clearInterval(interval)
-          }, 5000)
+          }, 10000)
         }
       })
     },
@@ -402,7 +402,7 @@ export default {
 }
 
 .screenshot-image {
-  width: 500px;
+  width: 100%;
   height: 250px;
   display: flex;
   background: #f5f7fa;
