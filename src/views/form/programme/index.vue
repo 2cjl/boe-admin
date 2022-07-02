@@ -219,18 +219,26 @@ export default {
       preview({ path: file.name }).then((res) => {
         // console.log(res);
         if (res.code === 200) {
-          const reader = new FileReader()
-          reader.readAsBinaryString(file)
-          reader.onload = function() {
-            axios({
-              method: 'put',
-              url: res.data,
-              data: reader.result
+          axios({
+            method: 'put',
+            url: res.data,
+            data: file
+          })
+            .then((res) => {
+              console.log(res)
             })
-              .then((res) => {
-                console.log(res)
-              })
-          }
+          // const reader = new FileReader()
+          // reader.readAsBinaryString(file)
+          // reader.onload = function() {
+          //   axios({
+          //     method: 'put',
+          //     url: res.data,
+          //     data: reader.result
+          //   })
+          //     .then((res) => {
+          //       console.log(res)
+          //     })
+          // }
         }
       })
     },

@@ -1,13 +1,13 @@
 import { login, logout, getInfo } from '@/api/user'
-import { getToken, setToken, removeToken } from '@/utils/auth'
+import { getToken, setToken, removeToken, setOrganName, removeOrganName, getOrganName } from '@/utils/auth'
 import { resetRouter } from '@/router'
 import { getOrganization } from '@/api/plan'
 const getDefaultState = () => {
   return {
     token: getToken(),
     name: '',
-    avatar: '',
-    OrganName: ''
+    avatar: 'https://xfhp.boeart.cn:3080/static/avater.058e9775.png',
+    OrganName: getOrganName()
   }
 }
 
@@ -43,6 +43,7 @@ const actions = {
         resolve()
         getOrganization().then((res) => {
           commit('SET_ORGANIZATION', res.data.Name)
+          setOrganName(res.data.Name)
         })
       }).catch(error => {
         reject(error)
@@ -76,6 +77,7 @@ const actions = {
     return new Promise((resolve, reject) => {
       logout(state.token).then(() => {
         removeToken() // must remove  token  first
+        removeOrganName()
         resetRouter()
         commit('RESET_STATE')
         resolve()
