@@ -72,9 +72,6 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      setTimeout(() => {
-        this.listLoading = false
-      }, 1.5 * 1000)
     }
   }
 }
