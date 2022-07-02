@@ -83,10 +83,10 @@
               <el-table-column label="当前计划" prop="PlanID" align="center" width="150px" />
               <el-table-column label="设备状态" width="150px" align="center">
                 <template slot-scope="{row}">
-                  <el-tag v-if="row.State === 'OFFLINE'" type="danger">
+                  <el-tag v-if="row.State === 'OFFLINE'" type="danger" effect="dark">
                     离线
                   </el-tag>
-                  <el-tag v-else>
+                  <el-tag v-else effect="dark">
                     在线
                   </el-tag>
 

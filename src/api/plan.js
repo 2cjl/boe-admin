@@ -60,7 +60,7 @@ export function getProgramList(offset, count) {
 
 export function getGroupDevice() {
   return request({
-    url: '/group/devices/3',
+    url: '/group/3/devices',
     method: 'get'
   })
 }

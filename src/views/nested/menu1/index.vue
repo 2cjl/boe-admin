@@ -64,7 +64,19 @@
         </template> -->
       </el-table-column>
       <el-table-column label="计划名称" prop="Name" width="150px" align="center" />
-      <el-table-column label="计划状态" min-width="150px" prop="State" align="center" />
+      <el-table-column label="计划状态" min-width="150px" align="center">
+        <template slot-scope="{row}">
+          <el-tag v-if="row.State === '未发布'" type="warning" effect="dark">
+            {{ row.State }}
+          </el-tag>
+          <el-tag v-else-if="row.State === '已发布'" type="danger" effect="dark">
+            {{ row.State }}
+          </el-tag>
+          <el-tag v-else type="info" effect="dark">
+            {{ row.State }}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="播放模式" width="110px" align="center" prop="Mode" />
       <el-table-column label="播放日期" width="80px">
         <template slot-scope="{row}">
