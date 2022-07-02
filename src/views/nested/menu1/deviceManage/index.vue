@@ -192,7 +192,7 @@ export default {
   },
   computed: {
     organname() {
-      return this.$store.state.OrganName
+      return this.$store.state.user.OrganName
     }
   },
   mounted() {

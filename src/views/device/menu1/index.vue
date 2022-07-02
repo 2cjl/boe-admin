@@ -5,14 +5,14 @@
         <el-col :span="8">
           <el-row style="margin-bottom: 10px">
             <span>设备名称： </span>
-            <el-input v-model="input1" placeholder="请输入设备名称" suffix-icon="el-icon-search" size="medium" class="input"/>
+            <el-input v-model="input1" placeholder="请输入设备名称" suffix-icon="el-icon-search" size="medium" class="input" />
           </el-row>
         </el-col>
         <el-col :span="8">
           <el-row style="margin-bottom: 10px">
             <span>所属机构：</span>
             <el-select v-model="value" placeholder="请选择">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"/>
+              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-row>
         </el-col>
@@ -20,21 +20,21 @@
           <el-row style="margin-bottom: 10px">
             <span>所属分组：</span>
             <el-select v-model="value" placeholder="请选择">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"/>
+              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-row>
         </el-col>
         <el-col :span="8">
           <el-row style="margin-bottom: 10px">
             <span>MAC地址：</span>
-            <el-input v-model="input1" placeholder="请输入设备名称" suffix-icon="el-icon-search" size="medium" class="input"/>
+            <el-input v-model="input1" placeholder="请输入设备名称" suffix-icon="el-icon-search" size="medium" class="input" />
           </el-row>
         </el-col>
         <el-col :span="8">
           <el-row style="margin-bottom: 10px">
             <span>当前计划：</span>
             <el-select v-model="value" placeholder="请选择">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"/>
+              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-row>
         </el-col>
@@ -42,7 +42,7 @@
           <el-row style="margin-bottom: 10px">
             <span>设备状态：</span>
             <el-select v-model="value" placeholder="请选择">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"/>
+              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-row>
         </el-col>
@@ -59,13 +59,13 @@
     </div>
 
     <el-table :data="list" border style="width: 100%">
-      <el-table-column type="selection" width="55"/>
+      <el-table-column type="selection" width="55" />
       <el-table-column prop="name" label="设备名称">
         <template v-slot="{row}">
           <span>{{ row.Name }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="organization" label="所属机构">test_o</el-table-column>
+      <el-table-column prop="organization" label="所属机构">{{ organname }}</el-table-column>
       <el-table-column prop="group" label="所属分组">
         <template v-slot="{row}">
           <span>{{ row.Name }}</span>
@@ -102,8 +102,12 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit"
-                @pagination="getList"
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="listQuery.page"
+      :limit.sync="listQuery.limit"
+      @pagination="getList"
     />
 
     <el-dialog title="设备详情" :visible.sync="dialogFormVisible" width="40%">
@@ -130,6 +134,8 @@
         <el-tab-pane label="状态信息" name="second">
           <el-row>
             <el-col :span="12"><span>最后心跳时间：{{ info.LastHeartbeat }}</span></el-col>
+          </el-row>
+          <el-row>
             <el-col :span="12"><span>运行时间：{{ info.RunningTime }}</span></el-col>
           </el-row>
           <el-row>
@@ -145,11 +151,11 @@
     <el-dialog :title="编辑设备" :visible.sync="dialogEditVisible" width="30%">
       <el-form ref="dataForm" :model="form" label-position="left" label-width="100px">
         <el-form-item label="设备名称" prop="username">
-          <el-input v-model="form.username"></el-input>
+          <el-input v-model="form.username" />
         </el-form-item>
         <el-form-item label="所属分组" prop="phone">
           <el-select v-model="value" placeholder="请选择">
-            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"/>
+            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -168,11 +174,11 @@ import { delGroup } from '@/api/group'
 
 export default {
   inject: ['reload'],
+  name: 'Index',
   components: { Pagination },
-  name: 'index',
   data() {
     return {
-      activeName: '',
+      activeName: 'first',
       tableKey: 0,
       list: null,
       info: {
@@ -209,6 +215,11 @@ export default {
       dialogFormVisible: false
     }
   },
+  computed: {
+    organname() {
+      return this.$store.state.user.OrganName
+    }
+  },
   created() {
     this.getList()
   },
@@ -224,9 +235,9 @@ export default {
       })
     },
 
-    //删除设备
+    // 删除设备
     async handleDelete(row, index) {
-      await delDevice(row.ID).then(()=>{
+      await delDevice(row.ID).then(() => {
         // console.log(row.ID)
         this.$notify({
           title: 'Success',
@@ -238,7 +249,7 @@ export default {
       })
     },
 
-    //更新设备
+    // 更新设备
     async handleUpdate(row) {
       this.form = Object.assign({}, row) // copy obj
       this.dialogEditVisible = true
@@ -247,13 +258,10 @@ export default {
       })
     },
     check(row) {
-      this.dialogFormVisible = true
       fetchDeviceInfo(row.ID).then(response => {
         this.info = response.data
         console.log(response.data)
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
+        this.dialogFormVisible = true
       })
     }
   }
