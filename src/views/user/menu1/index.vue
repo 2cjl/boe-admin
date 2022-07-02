@@ -14,19 +14,10 @@
           </el-row>
         </el-col>
         <el-col :span="8">
-          <el-row>
-            <span>所属机构：</span>
-            <el-select v-model="formInline.organization" placeholder="">
-              <el-option label="test_o" value="shanghai" />
-              <el-option label="test2" value="shanghai" />
-            </el-select>
-          </el-row>
-        </el-col>
-        <el-col :span="8">
           <el-row type="flex" justify="end" style="margin-bottom: -15px">
             <div>
-              <el-button plain>重置</el-button>
-              <el-button type="primary" @click="">查询</el-button>
+              <el-button plain @click="reset()">重置</el-button>
+              <el-button type="primary" @click="getList()">查询</el-button>
               <el-button class="filter-item" style="margin-left: 10px;" type="primary" @click="handleCreate">新建用户
               </el-button>
             </div>
@@ -225,15 +216,21 @@ export default {
   methods: {
     async getList() {
       this.listLoading = true
-      fetchUserList(this.listQuery).then(response => {
+      const selectQuery = {}
+      if (this.formInline.username !== '') {
+        selectQuery.name = this.formInline.username
+      }
+      fetchUserList(Object.assign(selectQuery, this.listQuery)).then(response => {
         this.list = response.users
         this.total = response.total
         // console.log(response)
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
       })
     },
+
+    reset() {
+      this.formInline.username = ''
+    },
+
     async resetForm() {
       this.form = {
         username: '',

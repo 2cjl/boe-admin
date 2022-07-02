@@ -9,18 +9,10 @@
           </el-row>
         </el-col>
         <el-col :span="8">
-          <el-row style="margin-bottom: 10px">
-            <span>分辨率：</span>
-            <el-select v-model="value" placeholder="请选择">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-row>
-        </el-col>
-        <el-col :span="8">
           <el-row type="flex" justify="end" style="margin-bottom: -15px">
             <div>
-              <el-button plain>重置</el-button>
-              <el-button type="primary" @click="onSubmit">查询</el-button>
+              <el-button plain @click="reset()">重置</el-button>
+              <el-button type="primary" @click="getList()">查询</el-button>
               <el-button type="primary" @click="handleCreate">创建节目</el-button>
             </div>
           </el-row>
@@ -171,14 +163,19 @@ export default {
   methods: {
     async getList() {
       this.listLoading = true
-      fetchShowList(this.listQuery).then(response => {
+      const selectQuery = {}
+      if (this.input1 !== '') {
+        selectQuery.name = this.input1
+      }
+      fetchShowList(Object.assign(selectQuery, this.listQuery)).then(response => {
         this.list = response.data.shows
         this.total = response.data.total
         console.log(response)
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
       })
+    },
+
+    reset() {
+      this.input1 = ''
     },
 
     handleRemove(file) {
@@ -245,9 +242,6 @@ export default {
 
     async createData() {
       this.$refs.imgUpload.submit()
-    },
-    async onSubmit() {
-      this.$message('submit!')
     },
     async onCancel() {
       this.$message({

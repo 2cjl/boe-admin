@@ -5,35 +5,13 @@
         <el-col :span="8">
           <el-row style="margin-bottom: 10px">
             <span>设备名称： </span>
-            <el-input v-model="input1" placeholder="请输入设备名称" suffix-icon="el-icon-search" size="medium" class="input" />
-          </el-row>
-        </el-col>
-        <el-col :span="8">
-          <el-row style="margin-bottom: 10px">
-            <span>所属机构：</span>
-            <el-select v-model="value" placeholder="请选择">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
+            <el-input v-model="searchInput1" placeholder="请输入设备名称" suffix-icon="el-icon-search" size="medium" class="input" />
           </el-row>
         </el-col>
         <el-col :span="8">
           <el-row style="margin-bottom: 10px">
             <span>所属分组：</span>
-            <el-select v-model="value" placeholder="请选择">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-row>
-        </el-col>
-        <el-col :span="8">
-          <el-row style="margin-bottom: 10px">
-            <span>MAC地址：</span>
-            <el-input v-model="input1" placeholder="请输入设备名称" suffix-icon="el-icon-search" size="medium" class="input" />
-          </el-row>
-        </el-col>
-        <el-col :span="8">
-          <el-row style="margin-bottom: 10px">
-            <span>当前计划：</span>
-            <el-select v-model="value" placeholder="请选择">
+            <el-select v-model="searchInput2" placeholder="请选择">
               <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-row>
@@ -41,16 +19,16 @@
         <el-col :span="8">
           <el-row style="margin-bottom: 10px">
             <span>设备状态：</span>
-            <el-select v-model="value" placeholder="请选择">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
+            <el-select v-model="searchInput3" placeholder="请选择">
+              <el-option v-for="item in optionsState" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-row>
         </el-col>
         <el-col :span="24">
           <el-row type="flex" justify="end">
             <div>
-              <el-button plain>重置</el-button>
-              <el-button type="primary">查询</el-button>
+              <el-button plain @click="reset()">重置</el-button>
+              <el-button type="primary" @click="getList()">查询</el-button>
               <el-button type="primary" @click="handleCreate">新建设备</el-button>
             </div>
           </el-row>
@@ -89,7 +67,8 @@
       <el-table-column fixed="right" label="操作" width="280">
         <template v-slot="{row,$index}">
           <el-button type="text" size="mini" @click="check(row)">详情</el-button>
-          <el-button type="text" size="mini" @click="handleControl(row)">控制</el-button>
+          <el-button v-if="row.State ==='OFFLINE'" type="text" size="mini" disabled>控制</el-button>
+          <el-button v-else type="text" size="mini" @click="handleControl(row)">控制</el-button>
           <el-button type="text" size="mini" @click="handleUpdate(row)">编辑</el-button>
           <el-button v-if="row.status!=='deleted'" size="mini" type="text" @click="handleDelete(row)">删除
           </el-button>
@@ -213,6 +192,7 @@ import {
   updateDevice
 } from '@/api/device'
 import Pagination from '@/components/Pagination'
+import { getAllGroup } from '@/api/group'
 
 export default {
   inject: ['reload'],
@@ -249,9 +229,20 @@ export default {
         username: '',
         mac: ''
       },
-      input1: '',
-      value: '',
+      searchInput1: '',
+      searchInput2: '',
+      searchInput3: '',
       options: '',
+      optionsState: [
+        {
+          value: 'ONLINE',
+          label: '在线'
+        },
+        {
+          value: 'OFFLINE',
+          label: '离线'
+        }
+      ],
       dialogCreateVisible: false,
       dialogEditVisible: false,
       dialogTableVisible: false,
@@ -269,14 +260,37 @@ export default {
   },
   created() {
     this.getList()
+    this.getOptions()
   },
   methods: {
     async getList() {
       this.listLoading = true
-      fetchDeviceList(this.listQuery).then(response => {
+      const selectQuery = {}
+      if (this.searchInput1 !== '') {
+        selectQuery.name = this.searchInput1
+      }
+      if (this.searchInput2 !== '') {
+        selectQuery.group = this.searchInput2
+      }
+      // if (this.searchInput3 !== '') {
+      //   selectQuery.name = this.searchInput1
+      // }
+      fetchDeviceList(Object.assign(selectQuery, this.listQuery)).then(response => {
         this.list = response.data.devices
         this.total = response.data.total
       })
+    },
+
+    getOptions() {
+      getAllGroup().then((res) => {
+        this.options = res.data.groups.map((v) => { return { label: v.Name, value: v.ID } })
+      })
+    },
+
+    reset() {
+      this.searchInput1 = ''
+      this.searchInput2 = ''
+      this.searchInput3 = ''
     },
 
     handleCreate() {
@@ -340,6 +354,7 @@ export default {
     handleControl(row) {
       this.form.id = row.ID
       this.dialogControlVisible = true
+      this.screenshotUrl = ''
     },
 
     capture() {
