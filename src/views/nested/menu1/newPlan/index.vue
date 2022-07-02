@@ -106,13 +106,13 @@
                       class="img-container"
                     />
                     <div class="mask">
-                      <el-row>
-                        <el-col :span="20"><div class="name">{{ program.name }}</div></el-col>
+                      <el-row class="">
+                        <el-col :span="20"><div class="name">{{ program.Name }}</div></el-col>
                         <el-col :span="4"><i class="el-icon-close" @click="handleProgramDelete(idx)" /></el-col>
                       </el-row>
                       <el-row>
-                        <el-col :span="16"><div>{{ program.ratio }}</div></el-col>
-                        <el-col :span="8"><div>{{ program.time }}</div></el-col>
+                        <el-col :span="16"><div>{{ program.Resolution }}</div></el-col>
+                        <el-col :span="8"><div>{{ program.Duration }}秒</div></el-col>
                       </el-row>
                     </div>
                   </div>
@@ -130,7 +130,7 @@
         </el-col>
 
       </el-row>
-      <el-form-item>
+      <el-form-item class="btn-container">
         <el-button @click="$router.go(-1)">取消</el-button>
         <el-button>保存</el-button>
         <el-button type="primary" @click="nextStep(form)">下一步</el-button>
@@ -197,22 +197,22 @@
       <el-dialog title="添加节目" :visible.sync="dialogProgramVisible">
         <div class="form-container">
           <el-row>
-            <el-col :span="8">
+            <el-col :span="12">
               <el-row>
                 <span>节目名称：</span>
                 <el-input
                   v-model="input1"
                   placeholder="请输入节目名称"
                   suffix-icon="el-icon-search"
-                  size="medium"
+                  size="small"
                   class="input"
                 />
               </el-row>
             </el-col>
-            <el-col :span="8">
+            <el-col :span="12">
               <el-row>
                 <span>分辨率：</span>
-                <el-select v-model="ratio" placeholder="请选择">
+                <el-select v-model="ratio" placeholder="请选择" size="small">
                   <el-option
                     v-for="item in ratioLists"
                     :key="item.value"
@@ -222,15 +222,15 @@
                 </el-select>
               </el-row>
             </el-col>
-            <el-col :span="8">
-              <el-row type="flex" justify="end">
-                <div>
-                  <el-button plain>重置</el-button>
-                  <el-button type="primary">查询</el-button>
-                </div>
-              </el-row>
-            </el-col>
           </el-row>
+          <div>
+            <el-row type="flex" justify="start">
+              <div class="btn-container">
+                <el-button plain size="small">重置</el-button>
+                <el-button type="primary" size="small">查询</el-button>
+              </div>
+            </el-row>
+          </div>
         </div>
         <el-table
           ref="programSelectTable"
@@ -239,13 +239,14 @@
           fit
           highlight-current-row
           style="width: 100%;"
+          class="table-container"
           @selection-change="handleProgramSelectionChange"
         >
           <el-table-column
             type="selection"
             width="55"
           />
-          <el-table-column label="缩略图" prop="pic" align="center" width="80">
+          <el-table-column label="缩略图" prop="Images" align="center" width="80">
             <template slot-scope="{row}">
               <el-image
                 :src="row.pic"
@@ -254,23 +255,23 @@
           </el-table-column>
           <el-table-column label="节目名称" min-width="150px" align="center">
             <template slot-scope="{row}">
-              <span>{{ row.name }}</span>
+              <span>{{ row.Name }}</span>
             </template>
             <!-- <template slot-scope="{row}">
           <span>{{ row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
         </template> -->
           </el-table-column>
-          <el-table-column label="分辨率" width="150px">
+          <el-table-column label="分辨率" width="150px" align="center">
             <template slot-scope="{row}">
-              <el-tag>{{ row.ratio }}</el-tag>
+              <el-tag>{{ row.Resolution }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column label="节目时长" width="110px" align="center">
             <template slot-scope="{row}">
-              <span>{{ row.time }}</span>
+              <span>{{ row.Duration }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="节目大小" width="80px">
+          <el-table-column label="节目大小" width="80px" align="center">
             <template slot-scope="{row}">
               <span>{{ row.size }}</span>
             </template>
@@ -278,7 +279,7 @@
 
         </el-table>
 
-        <!-- <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" /> -->
+        <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" />
         <div slot="footer" class="dialog-footer">
           <el-button @click="dialogProgramVisible = false">
             返回
@@ -294,8 +295,10 @@
   </div>
 </template>
 <script>
-
+import { getProgramList } from '@/api/plan'
+import Pagination from '@/components/Pagination'
 export default {
+  components: { Pagination },
   data() {
     return {
       form: {
@@ -304,40 +307,20 @@ export default {
         mode: '',
         syn: '',
         playTime: '',
-        PlayPeriods: [
-          { LoopMode: '',
-            // startTime: this.timeLists.startTime,
-            // endTime: this.timeLists.endTime,
-            // circlePeriod: this.timeLists.period,
-            shows: [
-              {
-                name: '',
-                Author: '',
-                Duration: ''
-
-              }
-            ]
-          }
-        ]
+        PlayPeriods: ''
       },
       ratio: '',
       input1: '',
       programList: [
-        {
-          pic: 'https://s3.bmp.ovh/imgs/2022/06/24/415d5ef060f6b058.jpeg',
-          name: '测试节目1',
-          ratio: '1920x1080',
-          time: '5 秒',
-          size: '123 kb'
-        },
-        {
-          pic: 'https://s3.bmp.ovh/imgs/2022/06/24/50dedbe0da3b01f5.jpeg',
-          name: '测试节目2',
-          ratio: '1920x1080',
-          time: '10 秒',
-          size: '982 kb'
-        }
       ],
+      listQuery: {
+        page: 1,
+        limit: 10,
+        importance: undefined,
+        title: undefined,
+        type: undefined,
+        sort: '+id'
+      },
       programListSelection: [],
       // timeForm: {
       //   cicrleTime: '',
@@ -346,6 +329,7 @@ export default {
       //   month: []
 
       // },
+      total: 0,
       timeListsSelect: -1, // TODO shanchu 当前所选时间段，用于展示节目
       timeLists: [],
       ratioLists: [{
@@ -393,10 +377,58 @@ export default {
     }
   },
   computed: {},
+  mounted() {
+    getProgramList(0, 10).then((res) => {
+      this.programList = res.data.shows
+      this.total = res.data.total
+      console.log(this.programList)
+    })
+  },
+  created() {
+    // this.choosePlanList = this.$route.params.choosePlanList
+    // console.log(this.choosePlanList)
+    this.form.name = this.$route.params.choosePlanList.Name
+    this.form.policy = '替换'
+    this.form.mode = this.$route.params.choosePlanList.Mode.substring(1, 5)
+    this.form.syn = '关闭'
+    this.form.playTime = [this.$route.params.choosePlanList.StartDate, this.$route.params.choosePlanList.EndDate]
+    // this.timeLists = this.$route.params.choosePlanList.PlayPeriods
+    this.$route.params.choosePlanList.PlayPeriods.forEach((v, idx) => {
+      v.LoopMode = JSON.parse(v.LoopMode)
+
+      this.timeLists[idx] = {
+        startTime: v.StartTime,
+        endTime: v.EndTime,
+        day: {
+          period: v.LoopMode.mode,
+          week: v.LoopMode.times,
+          date: v.LoopMode.times
+        },
+        programs: v.Shows
+
+      }
+    })
+    // this.$route.params.choosePlanList.PlayPeriods[this.timeListsSelect].Shows.forEach((v) => {
+    //   this.timeLists[this.timeListsSelect].program = {
+    //     name: v.Name,
+    //     pic: v.Images,
+    //     ratio: '',
+    //     time: ''
+
+    //   }
+    // })
+    // console.log()
+  },
 
   methods: {
     nextStep(form) {
-      // this.router.push('device')
+      this.form.PlayPeriods = this.timeLists
+      this.$router.push({
+        name: 'Device',
+        params: {
+          message: form
+        }
+      })
       console.log(form)
     },
     handleEdit(idx) {
@@ -637,7 +669,7 @@ export default {
 
 .add1 {
   cursor: pointer;
-  margin: 1rem 0;
+  /* margin: 1rem 0; */
   height: 202px;
   text-align: center;
   line-height: 95px;
@@ -645,6 +677,7 @@ export default {
   border-radius: 5px;
   color: #dadada;
   width: 150px;
+  /* flex-flow:wrap */
 
 }
 
@@ -723,5 +756,21 @@ ul {
 }
 .program-list {
   display: flex;
+}
+.btn-container {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+}
+.input {
+  width: 200px;
+}
+.btn-container {
+  margin: 10px 0;
+}
+.table-container {
+  margin-top: 15px;
 }
 </style>

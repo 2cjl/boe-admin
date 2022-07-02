@@ -20,3 +20,47 @@ export function getPlanDetailList(planId) {
     }
   })
 }
+
+export function getDeviceList(offset, count) {
+  return request({
+    url: '/device/all',
+    method: 'get',
+    params: {
+      offset,
+      count
+    }
+  })
+}
+
+export function getOrganization() {
+  return request({
+    url: '/organization',
+    method: 'get'
+  })
+}
+
+export function queryPlan(planId) {
+  return request({
+    url: '/plan/get_plan',
+    method: 'get',
+    params: planId
+  })
+}
+
+export function getProgramList(offset, count) {
+  return request({
+    url: '/show/all',
+    method: 'get',
+    params: {
+      offset,
+      count
+    }
+  })
+}
+
+export function getGroupDevice() {
+  return request({
+    url: '/group/devices/3',
+    method: 'get'
+  })
+}

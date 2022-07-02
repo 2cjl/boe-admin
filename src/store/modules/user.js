@@ -1,12 +1,13 @@
 import { login, logout, getInfo } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { resetRouter } from '@/router'
-
+import { getOrganization } from '@/api/plan'
 const getDefaultState = () => {
   return {
     token: getToken(),
     name: '',
-    avatar: ''
+    avatar: '',
+    OrganName: ''
   }
 }
 
@@ -24,6 +25,9 @@ const mutations = {
   },
   SET_AVATAR: (state, avatar) => {
     state.avatar = avatar
+  },
+  SET_ORGANIZATION: (state, name) => {
+    state.OrganName = name
   }
 }
 
@@ -37,6 +41,9 @@ const actions = {
         commit('SET_TOKEN', response.token)
         setToken(response.token)
         resolve()
+        getOrganization().then((res) => {
+          commit('SET_ORGANIZATION', res.data.Name)
+        })
       }).catch(error => {
         reject(error)
       })

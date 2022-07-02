@@ -43,7 +43,7 @@
         <el-col :span="6">
           <el-row type="flex" justify="end">
             <div>
-              <el-button plain>重置</el-button>
+              <el-button plain @click="resetting">重置</el-button>
               <el-button type="primary">查询</el-button>
             </div>
           </el-row>
@@ -56,52 +56,38 @@
         <el-tabs v-model="activeName" tab-position="top">
           <el-tab-pane label="单个设备" name="first">
             <el-table
-              :key="tableKey"
-              :data="deviceLists"
+              :data="deviceList"
               border
               fit
               highlight-current-row
               style="width: 100%;"
+              @selection-change="handleDeviceSelectionChange"
             >
               <el-table-column
                 type="selection"
                 width="55"
               />
-              <el-table-column label="设备名称" align="center" width="80">
-                <template slot-scope="{row}">
-                  <span>{{ row.name }}</span>
-                </template>
-              </el-table-column>
-              <el-table-column label="MAC地址" width="150px" align="center">
-                <template slot-scope="{row}">
-                  <span>{{ row.address }}</span>
-                </template>
-              </el-table-column>
-              <el-table-column label="所属分组" min-width="150px">
-                <template slot-scope="{row}">
-                  <span>{{ row.group }}</span>
-                </template>
-              </el-table-column>
-              <el-table-column label="分辨率" width="110px" align="center">
+              <el-table-column label="设备名称" prop="Name" align="center" width="150px" />
+              <el-table-column label="MAC地址" prop="Mac" width="150px" align="center" />
+              <!-- <el-table-column label="所属分组" prop="OrganizationID" min-width="150px" /> -->
+              <el-table-column label="分辨率" min-width="150px" align="center">
                 <template slot-scope="{row}">
                   <span>{{ row.ratio }}</span>
                 </template>
               </el-table-column>
-              <el-table-column label="所属机构" width="80px">
-                <template slot-scope="{row}">
-                  <span>{{ row.organ }}</span>
-                </template>
+              <el-table-column label="所属机构" width="150px" prop="OrganizationID" align="center">
+                <!-- <template slot-scope="{row}">
+                  <span>{{ row.OrganizationID }}</span>
+                </template> -->
               </el-table-column>
-              <el-table-column label="当前计划" align="center" width="95">
+              <el-table-column label="当前计划" prop="PlanID" align="center" width="150px" />
+              <el-table-column label="设备状态" width="150px" align="center">
                 <template slot-scope="{row}">
-
-                  <span>{{ row.plan }}</span>
-                </template>
-              </el-table-column>
-              <el-table-column label="设备状态" width="100">
-                <template slot-scope="{row}">
-                  <el-tag>
-                    {{ row.status }}
+                  <el-tag v-if="row.State === 'OFFLINE'" type="danger">
+                    离线
+                  </el-tag>
+                  <el-tag v-else>
+                    在线
                   </el-tag>
 
                 </template>
@@ -111,8 +97,7 @@
           </el-tab-pane>
           <el-tab-pane label="分组设备" name="second">
             <el-table
-              :key="tableKey"
-              :data="deviceLists"
+              :data="deviceByGroup"
               border
               fit
               highlight-current-row
@@ -122,22 +107,20 @@
                 type="selection"
                 width="55"
               />
-              <el-table-column label="分组名称" align="center" width="80">
+              <el-table-column label="分组名称" align="center" width="450">
                 <template slot-scope="{row}">
-                  <span>{{ row.group }}</span>
+                  <span>{{ row.Name }}</span>
                 </template>
               </el-table-column>
-              <el-table-column label="所属机构" width="150px" align="center">
+              <el-table-column label="所属机构" min-width="150px" align="center">
                 <template slot-scope="{row}">
-                  <span>{{ row.organ }}</span>
+                  <span>{{ row.OrganizationID }}</span>
                 </template>
               </el-table-column>
             </el-table>
             <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
           </el-tab-pane>
         </el-tabs>
-        <!-- <el-button @click="">单个设备</el-button>
-        <el-button>分组设备</el-button> -->
       </el-row>
 
     </div>
@@ -154,20 +137,24 @@
 </template>
 <script>
 import Pagination from '@/components/Pagination'
+import { getDeviceList, getOrganization, getGroupDevice } from '@/api/plan'
 export default {
   components: { Pagination },
   data() {
     return {
-      total: 10,
+      total: '',
       listLoading: true,
       listQuery: {
         page: 1,
-        limit: 20,
+        limit: 10,
         importance: undefined,
         title: undefined,
         type: undefined,
         sort: '+id'
       },
+      deviceListSelection: [],
+      devicelist: [],
+      deviceByGroup: [],
       activeName: 'first',
       input1: '',
       options: [{
@@ -201,6 +188,43 @@ export default {
         }
       ]
 
+    }
+  },
+  computed: {
+    organname() {
+      return this.$store.state.OrganName
+    }
+  },
+  mounted() {
+    this.getList()
+  },
+  methods: {
+    handleDeviceSelectionChange(val) {
+      this.deviceListSelection = val
+    },
+    resetting() {
+      this.input1 = ''
+      this.organ = ''
+      this.group = ''
+    },
+    getList() {
+      getDeviceList(0, 10).then((res) => {
+        this.deviceList = res.data.devices
+        this.total = res.data.total
+        this.deviceList.forEach((v) => {
+          v.OrganizationID = this.organname
+        })
+        console.log(this.deviceList)
+        // getOrganization().then((result) => {
+        //   this.deviceList.devices.forEach((v) => {
+        //     v.OrganizationID = result.data.Name
+        //   })
+        // })
+      })
+      getGroupDevice().then((res) => {
+        this.deviceByGroup = res.data
+        // console.log(this.deviceByGroup)
+      })
     }
   }
 

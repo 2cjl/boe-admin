@@ -30,8 +30,8 @@
         <el-col :span="8">
           <el-row type="flex" justify="end">
             <div>
-              <el-button plain>重置</el-button>
-              <el-button type="primary">查询</el-button>
+              <el-button plain @click="resetting">重置</el-button>
+              <el-button type="primary" @click="checkPlan()">查询</el-button>
             </div>
           </el-row>
         </el-col>
@@ -40,7 +40,8 @@
     <div class="btn-container">
       <el-row type="flex" justify="end">
         <el-button type="primary" @click="$router.push('new')">新建计划</el-button>
-        <el-button plain disabled>批量删除</el-button>
+        <el-button v-if="multipleSelection.length <= 0" plain disabled>批量删除</el-button>
+        <el-button v-else plain @click="deletePlans(multipleSelection)">批量删除</el-button>
       </el-row>
     </div>
     <el-table
@@ -50,6 +51,7 @@
       fit
       highlight-current-row
       style="width: 100%;"
+      @selection-change="handleSelectionChange"
       @sort-change="sortChange"
     >
       <el-table-column
@@ -61,69 +63,43 @@
           <span>{{ row.pic }}</span>
         </template> -->
       </el-table-column>
-      <el-table-column label="计划名称" prop="Name" width="150px" align="center">
-        <!-- <template slot-scope="{row}">
-          <span>{{ row.Name }}</span>
-        </template> -->
-        <!-- <template slot-scope="{row}">
-          <span>{{ row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
-        </template> -->
+      <el-table-column label="计划名称" prop="Name" width="150px" align="center" />
+      <el-table-column label="计划状态" min-width="150px" prop="State" align="center" />
+      <el-table-column label="播放模式" width="110px" align="center" prop="Mode" />
+      <el-table-column label="播放日期" width="80px">
+        <template slot-scope="{row}">
+          <span v-if="row.StartDate === row.EndDate">{{ row.StartDate }}</span>
+          <span v-else>{{ row.StartDate }}~{{ row.EndDate }}</span>
+        </template>
       </el-table-column>
-      <el-table-column label="计划状态" min-width="150px" prop="State">
-        <!-- <template slot-scope="{row}">
-          <span class="link-type" @click="handleUpdate(row)">{{ row.title }}</span>
-          <el-tag>{{ row.State }}</el-tag>
-        </template> -->
-      </el-table-column>
-      <el-table-column label="播放模式" width="110px" align="center" prop="Mode">
-        <!-- <template slot-scope="{row}">
-          <span>{{ row.Mode }}</span>
-        </template> -->
-      </el-table-column>
-      <el-table-column label="播放日期" width="80px" prop="CreatedAt">
-        <!-- <template slot-scope="{row}"> -->
-        <!-- <svg-icon v-for="n in + row.importance" :key="n" icon-class="star" class="meta-item__icon" /> -->
-        <!-- <span>{{ row.CreatedAt }}</span>
-        </template> -->
-      </el-table-column>
-      <el-table-column label="作者" align="center" width="95" prop="Author.Username">
-        <!-- <template slot-scope="{row}"> -->
-        <!-- <span v-if="row.pageviews" class="link-type" @click="handleFetchPv(row.pageviews)">{{ row.pageviews }}</span>
-          <span v-else>0</span> -->
-        <!-- <span>{{ row.Author.Username }}</span>
-        </template> -->
-      </el-table-column>
-      <el-table-column label="审核人" class-name="status-col" width="100" prop="Author.Username">
-        <!-- <template slot-scope="{row}"> -->
-        <!-- <el-tag :type="row.status | statusFilter">
-            {{ row.status }}
-          </el-tag> -->
-        <!-- <span>{{ row.Author.Username }}</span>
-        </template> -->
-      </el-table-column>
-      <el-table-column label="更新时间" width="110px" align="center" prop="UpdatedAt">
-        <!-- <template slot-scope="{row}">
-          <span>{{ row.UpdatedAt }}</span>
-        </template> -->
-      </el-table-column>
+      <el-table-column label="作者" align="center" width="95" prop="Author.Username" />
+      <!-- <el-table-column label="审核人" class-name="status-col" width="100" prop="Author.Username" /> -->
+      <el-table-column label="更新时间" width="110px" align="center" prop="UpdatedAt" />
       <el-table-column label="操作" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button type="text" size="mini" @click="check(row.ID)">
             详情
           </el-button>
-          <el-button type="text" disabled size="mini" @click="handleUpdate(row)">
+          <el-button v-if="row.State === '发布中' || row.State === '发布成功'" type="text" disabled size="mini">
             修改
           </el-button>
-          <el-button type="text" size="mini">
+          <el-button v-else type="text" size="mini" @click="handleUpdate(row.ID)">修改</el-button>
+          <el-button type="text" size="mini" @click="copyPLan(row,$index)">
             复制
           </el-button>
-          <el-button type="text" size="mini">
+          <el-button type="text" size="mini" @click="deleteSiglePlan(row,$index)">
             删除
           </el-button>
           <el-button type="text" size="mini">
             加密下载
           </el-button>
-          <el-button type="text" size="mini" disabled>
+          <el-button v-if="row.State === '未发布'" type="text" size="mini">
+            发布
+          </el-button>
+          <el-button v-else-if="row.State === '发布中'" type="text" size="mini" disabled>
+            重新发布
+          </el-button>
+          <el-button v-else type="text" size="mini" disabled>
             重新发布
           </el-button>
           <!-- <el-button v-if="row.status!='published'" size="mini" type="success" @click="handleModifyStatus(row,'published')">
@@ -144,7 +120,7 @@
     <el-dialog :model="choosePlanList" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-tabs v-model="activeName" type="card">
         <el-tab-pane label="计划详情" name="first">
-          <el-row>
+          <el-row class="plan-detail-container">
             <el-col :span="12">
               <span>
                 计划名称：{{ choosePlanList.Name }}
@@ -154,13 +130,14 @@
               </template>
             </el-col>
             <el-col :span="12">
-              <span>播放日期：{{ choosePlanList.StartDate }}</span>
+              <span v-if="choosePlanList.StartDate != choosePlanList.EndDate">播放日期：{{ choosePlanList.StartDate }} ~ {{ choosePlanList.EndDate }}</span>
+              <span v-else>播放日期：{{ choosePlanList.StartDate }}</span>
               <template slot-scope="{row}">
                 <span>{{ row.CreatedAt }}</span>
               </template>
             </el-col>
           </el-row>
-          <el-row>
+          <el-row class="plan-detail-container">
             <el-col :span="12">
               <span>
                 播放模式：{{ choosePlanList.Mode }}
@@ -171,7 +148,7 @@
             </el-col>
             <el-col :span="12"><span>播放策略：替换</span></el-col>
           </el-row>
-          <el-row>
+          <el-row class="plan-detail-container">
             <el-col :span="12">
               <span>
                 多屏同步：打开
@@ -179,31 +156,68 @@
             </el-col>
             <el-col :span="12"><span>发布状态：{{ choosePlanList.State }}</span></el-col>
           </el-row>
-          <el-col>
+          <el-row class="plan-detail-container">
             <span>创建时间：{{ choosePlanList.CreatedAt }}</span>
-          </el-col>
-          <el-col>
-            <div>播放时段：{{ choosePlanList.Mode }}<br>
-              <!-- 循环类型：{{ choosePlanList.PlayPeriods[0].LoopMode }}<br> -->
-              循环时间段：
-              <!-- <div v-for="item in choosePlanList.PlayPeriods" :key="item">
-                {{ item }}
-              </div> -->
-            </div>
+          </el-row>
+          <el-row class="plan-detail-container">
+            <span>播放时段：{{ choosePlanList.Mode }}</span>
+          </el-row>
+          <el-row class="plan-detail-container">
+            循环类型：<span v-if="choosePlanList.PlayPeriods">{{ choosePlanList.PlayPeriods[0].LoopMode.mode }}</span>
+          </el-row>
 
-          </el-col>
-          <el-col>
-            <div>已选节目：
-              <!-- <div v-for="item in choosePlanList.PlayPeriods[0].Shows" :key="item">
-                {{ item.Name }}
-              </div> -->
+          <div>循环时间段：
+            <el-tag v-for="(choosePlan,index) in choosePlanList.PlayPeriods" :key="index" class="time-period" @click="changeShow(index)">
+              {{ choosePlan.StartTime }}~{{ choosePlan.EndTime }}
+            </el-tag>
+          </div>
+
+          <el-row>
+            <div v-if="choosePlanList.PlayPeriods">
+              <span>已选节目：</span>
+              <div class="program-content">
+                <div v-for="(item,idx) in choosePlanList.PlayPeriods[timeListsSelect].Shows" :key="idx" class="program-card">
+                  <div>
+                    <el-image
+
+                      :src="item.Images"
+                      class="img-container"
+                    />
+                    <div class="mask">
+                      <el-row>
+                        <el-col :span="20"><div class="name">{{ item.Name }}</div></el-col>
+                      </el-row>
+                      <el-row>
+                        <el-col :span="16"><div>{{ item.ratio }}</div></el-col>
+                        <el-col :span="8"><div>{{ item.time }}</div></el-col>
+                      </el-row>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
             </div>
-          </el-col>
-          <el-col>
-            <div>原因：</div>
-          </el-col>
+          </el-row>
+          <el-row class="plan-detail-container">
+            <span>原因：</span>
+          </el-row>
         </el-tab-pane>
-        <el-tab-pane label="设备详情" name="second">设备详情</el-tab-pane>
+        <el-tab-pane label="设备详情" name="second">
+          <el-table
+
+            border
+            fit
+            highlight-current-row
+            style="width: 100%;"
+          >
+            <el-table-column label="设备名称" align="center" width="120" />
+            <el-table-column label="MAC地址" align="center" width="120" />
+            <el-table-column label="分辨率" align="center" width="100" />
+            <el-table-column label="所属机构" align="center" width="120" />
+            <el-table-column label="当前计划" align="center" width="100" />
+            <el-table-column label="设备状态" align="center" width="105" />
+          </el-table>
+        </el-tab-pane>
       </el-tabs>
 
       <div slot="footer" class="dialog-footer">
@@ -228,13 +242,15 @@
 // import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
+import moment from 'moment'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-import { getPlanList, getPlanDetailList } from '@/api/plan'
+import { getPlanList, getPlanDetailList, queryPlan } from '@/api/plan'
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' },
   { key: 'US', display_name: 'USA' },
   { key: 'JP', display_name: 'Japan' },
   { key: 'EU', display_name: 'Eurozone' }
+
 ]
 
 // arr to obj, such as { CN : "China", US : "USA" }
@@ -266,39 +282,19 @@ export default {
       activeName: 'first',
       planList: [],
       choosePlanList: {},
-      // list: [
-      //   {
-      //     pic: '1.jpg',
-      //     name: 'xxx',
-      //     status: '发布中',
-      //     mode: '按时段播放',
-      //     date: '2022-07-03',
-      //     author: 'catman',
-      //     admin: 'catmain',
-      //     updateTime: '2022-06-24 10:16:17'
-      //   },
-      //   {
-      //     pic: '1.jpg',
-      //     name: 'xxx',
-      //     status: '发布中',
-      //     mode: '按时段播放',
-      //     date: '2022-07-03',
-      //     author: 'catman',
-      //     admin: 'catmain',
-      //     updateTime: '2022-06-24 10:16:17'
-      //   }
-      // ],
-      input1: 'hh',
+      input1: '',
       total: 0,
       listLoading: true,
       listQuery: {
         page: 1,
-        limit: 20,
+        limit: 10,
         importance: undefined,
         title: undefined,
         type: undefined,
         sort: '+id'
       },
+      timeListsSelect: 0,
+      checkPlanItem: [],
       importanceOptions: [1, 2, 3],
       calendarTypeOptions,
       sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
@@ -328,23 +324,40 @@ export default {
       },
       downloadLoading: false,
       options: [{
-        value: '选项1',
-        label: '黄金糕'
+        value: '1',
+        label: '所以状态'
       }, {
-        value: '选项2',
-        label: '双皮奶',
-        disabled: true
+        value: '2',
+        label: '未发布'
       }, {
-        value: '选项3',
-        label: '蚵仔煎'
+        value: '3',
+        label: '发布中'
       }, {
-        value: '选项4',
-        label: '龙须面'
+        value: '4',
+        label: '发布成功'
       }, {
-        value: '选项5',
-        label: '北京烤鸭'
-      }],
-      value: ''
+        value: '5',
+        label: '部分成功'
+      },
+      {
+        value: '6',
+        label: '发布失败'
+      },
+      {
+        value: '7',
+        label: '已结束'
+      },
+      {
+        value: '8',
+        label: '已失效'
+      },
+      {
+        value: '9',
+        label: '审核中'
+      }
+      ],
+      value: '',
+      multipleSelection: []
     }
   },
   created() {
@@ -360,11 +373,41 @@ export default {
     //     console.log(this.planList)
     //   })
     // },
+    handleSelectionChange(val) {
+      this.multipleSelection = val
+      console.log(this.multipleSelection)
+    },
+    checkPlan(id) {
+      queryPlan(id).then((res) => {
+        this.checkPlanItem = res.data
+      })
+    },
+    deletePlans(arr) {
+      for (let i = 0; i < arr.length; i++) {
+        this.planList.splice(i, 1)
+      }
+      this.multipleSelection = []
+    },
+    deleteSiglePlan(row, index) {
+      this.$notify({
+        title: 'Success',
+        message: 'Delete Successfully',
+        type: 'success',
+        duration: 2000
+      })
+      this.planList.splice(index, 1)
+    },
+    resetting() {
+      this.value = ''
+      this.input1 = ''
+    },
     getList() {
       this.listLoading = true
-      getPlanList(0, 10).then((res) => {
+      getPlanList((this.listQuery.page - 1) * 10, this.listQuery.limit).then((res) => {
         this.planList = res.data.plans
         this.total = res.data.total
+        this.planList.forEach((v) => { v.UpdatedAt = moment(v.UpdatedAt).format('YYYY-MM-DD HH:mm:ss') })
+        // this.planList.forEach((v) => {v.CreatedAt = moment(v.CreatedAt).format('MMMM Do YYYY')})
         console.log(this.planList)
       })
       // fetchList(this.listQuery).then(response => {
@@ -380,6 +423,9 @@ export default {
     handleFilter() {
       this.listQuery.page = 1
       this.getList()
+    },
+    changeShow(idx) {
+      this.timeListsSelect = idx
     },
     handleModifyStatus(row, status) {
       this.$message({
@@ -439,14 +485,26 @@ export default {
         }
       })
     },
-    handleUpdate(row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.temp.timestamp = new Date(this.temp.timestamp)
-      this.dialogStatus = 'update'
-      this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
+    handleUpdate(id) {
+      console.log(id)
+      getPlanDetailList(id).then((res) => {
+        this.choosePlanList = res.data.plan
+        console.log(this.choosePlanList)
+        this.$router.push({
+          name: 'New',
+          params: {
+            choosePlanList: this.choosePlanList
+          }
+        })
       })
+
+      // this.temp = Object.assign({}, row) // copy obj
+      // this.temp.timestamp = new Date(this.temp.timestamp)
+      // this.dialogStatus = 'update'
+      // this.dialogFormVisible = true
+      // this.$nextTick(() => {
+      //   this.$refs['dataForm'].clearValidate()
+      // })
     },
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
@@ -467,19 +525,34 @@ export default {
         }
       })
     },
-    handleDelete(row, index) {
-      this.$notify({
-        title: 'Success',
-        message: 'Delete Successfully',
-        type: 'success',
-        duration: 2000
-      })
-      this.list.splice(index, 1)
-    },
+    // handleDelete(row, index) {
+    //   this.$notify({
+    //     title: 'Success',
+    //     message: 'Delete Successfully',
+    //     type: 'success',
+    //     duration: 2000
+    //   })
+    //   this.list.splice(index, 1)
+    // },
     check(id) {
       this.dialogFormVisible = true
       getPlanDetailList(id).then((res) => {
         this.choosePlanList = res.data.plan
+        this.choosePlanList.CreatedAt = moment(this.choosePlanList.CreatedAt).format('YYYY-MM-DD HH:mm:ss')
+        this.choosePlanList.PlayPeriods.forEach((v) => {
+          v.LoopMode = JSON.parse(v.LoopMode)
+          console.log(v.LoopMode)
+        })
+        // this.choosePlanList.PlayPeriods.forEach((v) => {
+        //   v.LoopMode.mode.reduce((prev,item) => {
+        //     if(prev.indexOf(item) === -1){
+        //       prev.push(item)
+        //     }
+        //     return prev
+        //   })
+        // })
+
+        // this.choosePlanList.StartDate
         console.log(this.choosePlanList)
       })
 
@@ -532,5 +605,52 @@ export default {
 }
 .input {
   width: 60%;
+}
+.program-card {
+  position: relative;
+  width: 120px;
+  height: 202px;
+  float: left;
+  margin-right: 1rem;
+  margin-bottom: 1rem;
+
+}
+.program-content {
+  margin-top: 1rem;
+  padding: 1rem;
+    overflow: auto;
+    border: 1px solid #d9d9d9;
+}
+.img-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  object-fit: cover;
+}
+.mask {
+  position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    font-size: 14px;
+    color: #ccc;
+    height: 4.5rem;
+    background: rgba(0,0,0,.4);
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+
+}
+.time-period {
+  cursor: pointer;
+  margin: 5px;
+}
+.plan-detail-container {
+  padding: 5px 0;
+
 }
 </style>

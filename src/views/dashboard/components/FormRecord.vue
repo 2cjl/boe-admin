@@ -23,6 +23,7 @@
 
 <script>
 import { getEventsRecord } from '@/api/home'
+import moment from 'moment'
 export default {
   data() {
     return {
@@ -36,6 +37,7 @@ export default {
     query() {
       getEventsRecord().then((res) => {
         this.eventsRecord = res.data.events
+        this.eventsRecord.forEach((v) => { v.Time = moment(v.Time).format('YYYY-MM-DD HH:mm:ss') })
         console.log(this.eventsRecord)
       })
     }
