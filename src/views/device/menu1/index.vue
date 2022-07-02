@@ -89,7 +89,7 @@
       <el-table-column fixed="right" label="操作" width="280">
         <template v-slot="{row,$index}">
           <el-button type="text" size="mini" @click="check(row)">详情</el-button>
-          <el-button type="text" size="mini" @click="">控制</el-button>
+          <el-button type="text" size="mini" @click="handleControl(row)">控制</el-button>
           <el-button type="text" size="mini" @click="handleUpdate(row)">编辑</el-button>
           <el-button v-if="row.status!=='deleted'" size="mini" type="text" @click="handleDelete(row)">删除
           </el-button>
@@ -143,6 +143,33 @@
       </div>
     </el-dialog>
 
+    <el-dialog title="控制设备" :visible.sync="dialogControlVisible" width="40%">
+      <el-tabs v-model="activeName" type="card">
+        <el-tab-pane label="截屏" name="first">
+          <el-image
+            v-if="screenshotUrl === ''"
+            class="screenshot-image"
+          >
+            <div slot="error" class="image-slot">
+              <i class="el-icon-picture-outline" />
+            </div>
+          </el-image>
+          <el-image v-else style="width: 500px" />
+          <el-button type="primary" @click="capture()">截屏</el-button>
+        </el-tab-pane>
+        <el-tab-pane label="调节亮度" name="second">
+          <div class="block">
+            <span class="demonstration">亮度（0～100）</span>
+            <el-slider v-model="brightnessValue" />
+          </div>
+          <el-button type="primary" @click="setb()">设置</el-button>
+        </el-tab-pane>
+      </el-tabs>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogControlVisible = false">返回</el-button>
+      </div>
+    </el-dialog>
+
     <el-dialog title="新建设备" :visible.sync="dialogCreateVisible" width="30%">
       <el-form ref="dataForm" :model="form" label-position="left" label-width="100px">
         <el-form-item label="设备名称" prop="username">
@@ -176,7 +203,15 @@
 </template>
 
 <script>
-import { createDevice, delDevice, fetchDeviceInfo, fetchDeviceList, updateDevice } from '@/api/device'
+import {
+  createDevice,
+  delDevice,
+  fetchDeviceInfo,
+  fetchDeviceList, getLastScreenshot,
+  screenshot,
+  setBrightness,
+  updateDevice
+} from '@/api/device'
 import Pagination from '@/components/Pagination'
 
 export default {
@@ -220,7 +255,11 @@ export default {
       dialogCreateVisible: false,
       dialogEditVisible: false,
       dialogTableVisible: false,
-      dialogFormVisible: false
+      dialogFormVisible: false,
+      dialogControlVisible: false,
+      brightnessValue: 60,
+      screenshotUrl: '',
+      isScreenLoading: false
     }
   },
   computed: {
@@ -298,6 +337,44 @@ export default {
       })
     },
 
+    handleControl(row) {
+      this.form.id = row.ID
+      this.dialogControlVisible = true
+    },
+
+    capture() {
+      this.isScreenLoading = true
+      screenshot(this.form.id).then((res) => {
+        if (res.code === 200) {
+          const interval = setInterval(() => {
+            getLastScreenshot(this.form.id).then((res) => {
+              if (res.code === 200) {
+                this.screenshotUrl = 'data:image/png;base64,' + res.data
+                this.isScreenLoading = false
+                clearInterval(interval)
+              }
+            })
+          }, 250)
+          setTimeout(() => {
+            if (interval != null) clearInterval(interval)
+          }, 5000)
+        }
+      })
+    },
+
+    setb() {
+      setBrightness(this.form.id, { data: this.brightnessValue / 100 }).then((res) => {
+        if (res.code === 200) {
+          this.$message({
+            message: '调节亮度成功',
+            type: 'success'
+          })
+        }
+      }).catch(e => {
+        this.$message.error('调节亮度失败')
+      })
+    },
+
     check(row) {
       fetchDeviceInfo(row.ID).then(response => {
         this.info = response.data
@@ -322,5 +399,14 @@ export default {
 
 .input {
   width: 60%;
+}
+
+.screenshot-image {
+  width: 500px;
+  height: 250px;
+  display: flex;
+  background: #f5f7fa;
+  justify-content: center;
+  align-items: center;
 }
 </style>

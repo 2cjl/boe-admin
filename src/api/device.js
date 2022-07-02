@@ -37,3 +37,25 @@ export function delDevice(id) {
     method: 'delete'
   })
 }
+
+export function screenshot(id) {
+  return request({
+    url: `/device/${id}/screenshot`,
+    method: 'post'
+  })
+}
+
+export function getLastScreenshot(id) {
+  return request({
+    url: `/device/${id}/screenshot`,
+    method: 'get'
+  })
+}
+
+export function setBrightness(id, data) {
+  return request({
+    url: `/device/${id}/brightness`,
+    method: 'put',
+    data
+  })
+}
