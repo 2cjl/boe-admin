@@ -1,12 +1,12 @@
 import request from '@/utils/request'
 
-export function groupCount() {
-  return request({
-    url: '/home/group/count',
-    method: 'get'
+// export function groupCount() {
+//   return request({
+//     url: '/home/group/count',
+//     method: 'get'
 
-  })
-}
+//   })
+// }
 
 export function getEventsRecord() {
   return request({

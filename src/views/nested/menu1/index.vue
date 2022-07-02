@@ -31,7 +31,7 @@
           <el-row type="flex" justify="end">
             <div>
               <el-button plain @click="resetting">重置</el-button>
-              <el-button type="primary" @click="checkPlan()">查询</el-button>
+              <el-button type="primary" @click="checkPlan(input1,value)">查询</el-button>
             </div>
           </el-row>
         </el-col>
@@ -58,10 +58,11 @@
         type="selection"
         width="55"
       />
-      <el-table-column label="缩略图" align="center" width="80">
-        <!-- <template slot-scope="{row}">
-          <span>{{ row.pic }}</span>
-        </template> -->
+      <el-table-column label="缩略图" align="center" width="130">
+
+        <template slot-scope="{row}">
+          <img :src="row.Preview" class="img-content"></img>
+        </template>
       </el-table-column>
       <el-table-column label="计划名称" prop="Name" width="150px" align="center" />
       <el-table-column label="计划状态" min-width="150px" align="center">
@@ -200,8 +201,8 @@
                         <el-col :span="20"><div class="name">{{ item.Name }}</div></el-col>
                       </el-row>
                       <el-row>
-                        <el-col :span="16"><div>{{ item.ratio }}</div></el-col>
-                        <el-col :span="8"><div>{{ item.time }}</div></el-col>
+                        <el-col :span="16"><div>{{ item.Resolution }}</div></el-col>
+                        <el-col :span="8"><div>{{ item.Duration }}秒</div></el-col>
                       </el-row>
                     </div>
                   </div>
@@ -216,18 +217,26 @@
         </el-tab-pane>
         <el-tab-pane label="设备详情" name="second">
           <el-table
+            :data="deviceList"
 
             border
             fit
             highlight-current-row
             style="width: 100%;"
           >
-            <el-table-column label="设备名称" align="center" width="120" />
-            <el-table-column label="MAC地址" align="center" width="120" />
-            <el-table-column label="分辨率" align="center" width="100" />
-            <el-table-column label="所属机构" align="center" width="120" />
-            <el-table-column label="当前计划" align="center" width="100" />
-            <el-table-column label="设备状态" align="center" width="105" />
+            <el-table-column label="设备名称" align="center" width="120" prop="Name" />
+            <el-table-column label="MAC地址" align="center" width="120" prop="Mac" />
+            <el-table-column label="分辨率" align="center" width="100" prop="Resolution" />
+            <el-table-column label="所属机构" align="center" width="120">
+              test2
+            </el-table-column>
+            <el-table-column label="当前计划" align="center" width="100" prop="PlanName" />
+            <el-table-column label="设备状态" align="center" width="105">
+              <template slot-scope="{row}">
+                <el-tag v-if="row.State === 'OFFLINE'" type="danger" effect="dark">{{ row.State }}</el-tag>
+                <el-tag v-else effect="dark">{{ row.State }}</el-tag>
+              </template>
+            </el-table-column>
           </el-table>
         </el-tab-pane>
       </el-tabs>
@@ -256,7 +265,7 @@ import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import moment from 'moment'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-import { getPlanList, getPlanDetailList, queryPlan } from '@/api/plan'
+import { getPlanList, getPlanDetailList, queryPlan, copyProgram, deleteProgram } from '@/api/plan'
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' },
   { key: 'US', display_name: 'USA' },
@@ -294,6 +303,7 @@ export default {
       activeName: 'first',
       planList: [],
       choosePlanList: {},
+      deviceList: [],
       input1: '',
       total: 0,
       listLoading: true,
@@ -379,19 +389,25 @@ export default {
   //   this.query()
   // },
   methods: {
-    // query() {
-    //   getPlanList(0, 10).then((res) => {
-    //     this.planList = res.data
-    //     console.log(this.planList)
-    //   })
-    // },
+    copyPLan(row, index) {
+      copyProgram(row.ID).then((res) => {
+        console.log(res)
+      })
+      this.getList()
+    },
     handleSelectionChange(val) {
       this.multipleSelection = val
       console.log(this.multipleSelection)
     },
-    checkPlan(id) {
-      queryPlan(id).then((res) => {
-        this.checkPlanItem = res.data
+    checkPlan(name, state) {
+      this.listLoading = true
+      getPlanList((this.listQuery.page - 1) * 10, this.listQuery.limit, name, state).then((res) => {
+        this.planList = res.data.plans
+        this.total = res.data.total
+        this.planList.forEach((v) => { v.UpdatedAt = moment(v.UpdatedAt).format('YYYY-MM-DD HH:mm:ss') })
+        setTimeout(() => {
+          this.listLoading = false
+        }, 0.5 * 1000)
       })
     },
     deletePlans(arr) {
@@ -550,21 +566,18 @@ export default {
       this.dialogFormVisible = true
       getPlanDetailList(id).then((res) => {
         this.choosePlanList = res.data.plan
+        this.deviceList = res.data.devices
         this.choosePlanList.CreatedAt = moment(this.choosePlanList.CreatedAt).format('YYYY-MM-DD HH:mm:ss')
         this.choosePlanList.PlayPeriods.forEach((v) => {
           v.LoopMode = JSON.parse(v.LoopMode)
-          console.log(v.LoopMode)
-        })
-        // this.choosePlanList.PlayPeriods.forEach((v) => {
-        //   v.LoopMode.mode.reduce((prev,item) => {
-        //     if(prev.indexOf(item) === -1){
-        //       prev.push(item)
-        //     }
-        //     return prev
-        //   })
-        // })
+          v.Shows.forEach((item) => {
+            item.Images = JSON.parse(item.Images)
+            // console.log(item.Images)
+          })
 
-        // this.choosePlanList.StartDate
+          // console.log(v.LoopMode)
+        })
+
         console.log(this.choosePlanList)
       })
 
@@ -664,5 +677,9 @@ export default {
 .plan-detail-container {
   padding: 5px 0;
 
+}
+.img-content {
+  width: 75px;
+  height: 75px;
 }
 </style>

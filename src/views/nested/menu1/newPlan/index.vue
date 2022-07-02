@@ -102,7 +102,7 @@
                   <div>
                     <el-image
 
-                      :src="program.pic"
+                      :src="program.Images"
                       class="img-container"
                     />
                     <div class="mask">
@@ -227,7 +227,7 @@
             <el-row type="flex" justify="start">
               <div class="btn-container">
                 <el-button plain size="small">重置</el-button>
-                <el-button type="primary" size="small">查询</el-button>
+                <el-button type="primary" size="small" @click="checkShow(input1)">查询</el-button>
               </div>
             </el-row>
           </div>
@@ -249,7 +249,7 @@
           <el-table-column label="缩略图" prop="Images" align="center" width="80">
             <template slot-scope="{row}">
               <el-image
-                :src="row.pic"
+                :src="row.Preview"
               />
             </template>
           </el-table-column>
@@ -295,7 +295,7 @@
   </div>
 </template>
 <script>
-import { getProgramList } from '@/api/plan'
+import { getProgramList, getResolutionList } from '@/api/plan'
 import Pagination from '@/components/Pagination'
 export default {
   components: { Pagination },
@@ -332,22 +332,7 @@ export default {
       total: 0,
       timeListsSelect: -1, // TODO shanchu 当前所选时间段，用于展示节目
       timeLists: [],
-      ratioLists: [{
-        value: '1',
-        label: '全部分辨率'
-      }, {
-        value: '2',
-        label: '3840x2160'
-      }, {
-        value: '3',
-        label: '2160x3840'
-      }, {
-        value: '4',
-        label: '1920x1080'
-      }, {
-        value: '5',
-        label: '1080x1920'
-      }],
+      ratioLists: [],
       currentLists: [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
       dateLists: ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期七'],
       dayLists: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31'],
@@ -383,6 +368,12 @@ export default {
       this.total = res.data.total
       console.log(this.programList)
     })
+    getResolutionList().then((res) => {
+      for (let i = 0; i < res.data.resolutions.length; i++) {
+        this.ratioLists.push({ label: res.data.resolutions[i], value: i + 1 })
+      }
+      // console.log(this.ratioLists)
+    })
   },
   created() {
     // this.choosePlanList = this.$route.params.choosePlanList
@@ -395,7 +386,9 @@ export default {
     // this.timeLists = this.$route.params.choosePlanList.PlayPeriods
     this.$route.params.choosePlanList.PlayPeriods.forEach((v, idx) => {
       v.LoopMode = JSON.parse(v.LoopMode)
-
+      v.Shows.forEach((item) => {
+        item.Images = JSON.parse(item.Images)
+      })
       this.timeLists[idx] = {
         startTime: v.StartTime,
         endTime: v.EndTime,
@@ -592,6 +585,9 @@ export default {
     programDialogSave() {
       this.dialogProgramVisible = false
       this.timeLists[this.timeListsSelect].programs.push(...this.programListSelection)
+      this.timeLists[this.timeListsSelect].programs.forEach((v) => {
+        v.Images = JSON.parse(v.Images)
+      })
       console.log(this.timeLists[0])
     },
     handleProgramDelete(idx) {
@@ -625,6 +621,12 @@ export default {
         this.isShow = false
         this.isShow1 = false
       }
+    },
+    checkShow(name) {
+      getProgramList(0, 10, name).then((res) => {
+        this.programList = res.data.shows
+        this.total = res.data.total
+      })
     }
   }
 }
@@ -772,5 +774,8 @@ ul {
 }
 .table-container {
   margin-top: 15px;
+}
+.app-container {
+  background-color: #fff;
 }
 </style>

@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="form-container">
       <el-row>
-        <el-col :span="6">
+        <el-col :span="9">
           <el-row>
             <span>设备名称：</span>
             <el-input
@@ -14,7 +14,7 @@
             />
           </el-row>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="9">
           <el-row>
             <span>所属机构：</span>
             <el-select v-model="organ" placeholder="请选择">
@@ -27,7 +27,7 @@
             </el-select>
           </el-row>
         </el-col>
-        <el-col :span="6">
+        <!-- <el-col :span="6">
           <el-row>
             <span>所属分组：</span>
             <el-select v-model="group" placeholder="请选择所属分组">
@@ -39,12 +39,12 @@
               />
             </el-select>
           </el-row>
-        </el-col>
+        </el-col> -->
         <el-col :span="6">
           <el-row type="flex" justify="end">
             <div>
               <el-button plain @click="resetting">重置</el-button>
-              <el-button type="primary">查询</el-button>
+              <el-button type="primary" @click="checkDevices(input1,organ)">查询</el-button>
             </div>
           </el-row>
         </el-col>
@@ -70,11 +70,11 @@
               <el-table-column label="设备名称" prop="Name" align="center" width="150px" />
               <el-table-column label="MAC地址" prop="Mac" width="150px" align="center" />
               <!-- <el-table-column label="所属分组" prop="OrganizationID" min-width="150px" /> -->
-              <el-table-column label="分辨率" min-width="150px" align="center">
+              <!-- <el-table-column label="分辨率" min-width="150px" align="center">
                 <template slot-scope="{row}">
                   <span>{{ row.ratio }}</span>
                 </template>
-              </el-table-column>
+              </el-table-column> -->
               <el-table-column label="所属机构" width="150px" prop="OrganizationID" align="center">
                 <!-- <template slot-scope="{row}">
                   <span>{{ row.OrganizationID }}</span>
@@ -83,10 +83,10 @@
               <el-table-column label="当前计划" prop="PlanID" align="center" width="150px" />
               <el-table-column label="设备状态" width="150px" align="center">
                 <template slot-scope="{row}">
-                  <el-tag v-if="row.State === 'OFFLINE'" type="danger">
+                  <el-tag v-if="row.State === 'OFFLINE'" type="danger" effect="dark">
                     离线
                   </el-tag>
-                  <el-tag v-else>
+                  <el-tag v-else effect="dark">
                     在线
                   </el-tag>
 
@@ -159,7 +159,7 @@ export default {
       input1: '',
       options: [{
         value: '1',
-        label: '城院罗老师'
+        label: 'test2'
       }],
       options1: [{
         value: '1',
@@ -175,18 +175,18 @@ export default {
         label: '473737'
       }],
       organ: '',
-      group: '',
-      deviceLists: [
-        {
-          name: '测试巫山',
-          address: 'sss',
-          group: 'fff',
-          ratio: '1920*1080',
-          organ: '城院罗老师测试',
-          plan: '-',
-          status: '离线'
-        }
-      ]
+      group: ''
+      // deviceLists: [
+      //   {
+      //     name: '测试巫山',
+      //     address: 'sss',
+      //     group: 'fff',
+      //     ratio: '1920*1080',
+      //     organ: '城院罗老师测试',
+      //     plan: '-',
+      //     status: '离线'
+      //   }
+      // ]
 
     }
   },
@@ -202,34 +202,39 @@ export default {
     handleDeviceSelectionChange(val) {
       this.deviceListSelection = val
     },
+    checkDevices(name, group) {
+      this.activeName = 'first'
+      getDeviceList((this.listQuery.page - 1) * 10, this.listQuery.limit, name, group).then((res) => {
+        this.deviceList = res.data.devices
+        this.total = res.data.total
+        // console.log(this.deviceList)
+        this.deviceList.forEach((v) => {
+          v.OrganizationID = this.organname
+          // console.log(this.deviceList)
+        })
+      })
+    },
     resetting() {
       this.input1 = ''
       this.organ = ''
       this.group = ''
     },
     getList() {
-      getDeviceList(0, 10).then((res) => {
+      getDeviceList((this.listQuery.page - 1 * 10), this.listQuery.limit).then((res) => {
         this.deviceList = res.data.devices
         this.total = res.data.total
         this.deviceList.forEach((v) => {
           v.OrganizationID = this.organname
         })
-        console.log(this.deviceList)
-        // getOrganization().then((result) => {
-        //   this.deviceList.devices.forEach((v) => {
-        //     v.OrganizationID = result.data.Name
-        //   })
-        // })
       })
       getGroupDevice().then((res) => {
         this.deviceByGroup = res.data
         // console.log(this.deviceByGroup)
       })
     }
+
   }
-
 }
-
 </script>
 <style scoped>
 .app-container {

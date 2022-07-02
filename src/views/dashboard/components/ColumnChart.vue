@@ -27,7 +27,7 @@ export default {
   data() {
     return {
       chart: null,
-      groupCount: {},
+      groupCount: [],
       nameList: [],
       countList: []
     }
