@@ -42,7 +42,7 @@
       </el-table-column>
       <el-table-column prop="organization" label="所属机构">
         <template v-slot="{row}">
-          <span>{{ row.Organization.Name }}</span>
+          <span>{{ organname }}</span>
         </template>
       </el-table-column>
       <el-table-column width="100" prop="state" label="状态">
@@ -81,9 +81,9 @@
       </el-table-column>
       <el-table-column fixed="right" label="操作">
         <template v-slot="{row,$index}">
-          <el-button type="danger" size="mini" @click="handleStop(row)">停用</el-button>
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(row,$index)">删除
+          <el-button type="text" size="mini" @click="handleStop(row)">停用</el-button>
+          <el-button type="text" size="mini" @click="handleUpdate(row)">编辑</el-button>
+          <el-button size="mini" type="text" @click="handleDelete(row,$index)">删除
           </el-button>
         </template>
       </el-table-column>
@@ -178,7 +178,7 @@ export default {
         passwd: '',
         phone: '',
         email: '',
-        organization: 1,
+        organization: '',
         realName: '管理员',
         status: '启用'
       },
@@ -214,6 +214,11 @@ export default {
       }
     }
   },
+  computed: {
+    organname() {
+      return this.$store.state.user.OrganName
+    }
+  },
   created() {
     this.getList()
   },
@@ -235,7 +240,7 @@ export default {
         passwd: '',
         phone: '',
         email: '',
-        organization: 1,
+        organization: '',
         realName: '管理员',
         status: '启用'
       }
@@ -257,7 +262,10 @@ export default {
 
     // 更新用户
     async handleUpdate(row) {
-      this.form = Object.assign({}, row) // copy obj
+      this.form.email = row.Email
+      this.form.username = row.Username
+      this.form.phone = row.Phone
+      this.form.organization = this.organname
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {

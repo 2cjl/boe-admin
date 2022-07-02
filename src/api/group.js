@@ -8,9 +8,24 @@ export function getAllGroup(query) {
   })
 }
 
+export function createGroup(data) {
+  return request({
+    url: `/group`,
+    method: 'post',
+    data
+  })
+}
+
+export function getGroupDevice(id) {
+  return request({
+    url: `/group/${id}/devices`,
+    method: 'get'
+  })
+}
+
 export function delGroup(id) {
   return request({
     url: `/group/${id}`,
-    method: 'delete',
+    method: 'delete'
   })
 }

@@ -31,7 +31,7 @@
       <el-table-column type="selection" width="55" />
       <el-table-column label="缩略图" width="100px">
         <template v-slot="{row}">
-          <span>{{ row.Images }}</span>
+          <el-image :src="row.Preview" />
         </template>
       </el-table-column>
       <el-table-column label="节目名称" width="220px">
@@ -61,10 +61,10 @@
       </el-table-column>
       <el-table-column fixed="right" label="操作">
         <template v-slot="{row,$index}">
-          <el-button type="primary" size="mini" @click="check(row)">预览</el-button>
-          <el-button type="primary" size="mini">编辑</el-button>
-          <el-button type="success" size="mini">发布</el-button>
-          <el-button v-if="row.status!=='deleted'" size="mini" type="danger">删除
+          <el-button type="text" size="mini" @click="handlePictureCardPreview(row.Preview)">预览</el-button>
+          <el-button type="text" size="mini">编辑</el-button>
+          <el-button type="text" size="mini">发布</el-button>
+          <el-button v-if="row.status!=='deleted'" size="mini" type="text">删除
           </el-button>
         </template>
       </el-table-column>
@@ -93,7 +93,7 @@
           <div slot="file" slot-scope="{file}">
             <img class="el-upload-list__item-thumbnail" :src="file.url" alt="">
             <span class="el-upload-list__item-actions">
-              <span class="el-upload-list__item-preview" @click="handlePictureCardPreview(file)">
+              <span class="el-upload-list__item-preview" @click="handlePictureCardPreview(file.url)">
                 <i class="el-icon-zoom-in" />
               </span>
               <span v-if="!disabled" class="el-upload-list__item-delete" @click="handleRemove(file)">
@@ -150,7 +150,7 @@ export default {
       },
       listQuery: {
         page: 1,
-        limit: 5,
+        limit: 10,
         importance: undefined,
         title: undefined,
         type: undefined,
@@ -184,8 +184,8 @@ export default {
     handleRemove(file) {
       console.log(file)
     },
-    handlePictureCardPreview(file) {
-      this.dialogImageUrl = file.url
+    handlePictureCardPreview(url) {
+      this.dialogImageUrl = url
       this.dialogVisible = true
     },
 
