@@ -5,14 +5,14 @@
         <el-col :span="8">
           <el-row style="margin-bottom: 10px">
             <span>节目名称：</span>
-            <el-input v-model="input1" placeholder="请输入设备名称" suffix-icon="el-icon-search" size="medium" class="input"/>
+            <el-input v-model="input1" placeholder="请输入设备名称" suffix-icon="el-icon-search" size="medium" class="input" />
           </el-row>
         </el-col>
         <el-col :span="8">
           <el-row style="margin-bottom: 10px">
             <span>分辨率：</span>
             <el-select v-model="value" placeholder="请选择">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"/>
+              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-row>
         </el-col>
@@ -21,44 +21,223 @@
             <div>
               <el-button plain>重置</el-button>
               <el-button type="primary" @click="onSubmit">查询</el-button>
+              <el-button type="primary" @click="handleCreate">创建节目</el-button>
             </div>
           </el-row>
         </el-col>
       </el-row>
     </div>
     <el-table :data="list" border style="width: 100%">
-      <el-table-column type="selection" width="55"/>
-      <el-table-column label="缩略图"></el-table-column>
-      <el-table-column label="节目名称"></el-table-column>
-      <el-table-column label="分辨率"></el-table-column>
-      <el-table-column label="节目时长"></el-table-column>
-      <el-table-column label="更新时间"></el-table-column>
+      <el-table-column type="selection" width="55" />
+      <el-table-column label="缩略图" width="100px">
+        <template v-slot="{row}">
+          <span>{{ row.Images }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="节目名称" width="220px">
+        <template v-slot="{row}">
+          <span>{{ row.Name }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="分辨率" width="150px">
+        <template v-slot="{row}">
+          <span>{{ row.Resolution }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="节目时长" width="100px">
+        <template v-slot="{row}">
+          <span>{{ row.Duration }}秒</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="作者" width="100px">
+        <template v-slot="{row}">
+          <span>{{ row.Author }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="更新时间">
+        <template v-slot="{row}">
+          <span>{{ row.UpdatedAt }}</span>
+        </template>
+      </el-table-column>
       <el-table-column fixed="right" label="操作">
         <template v-slot="{row,$index}">
-          <el-button type="primary" size="mini" @click="check(row)">详情</el-button>
-          <el-button type="primary" size="mini" @click="">编辑</el-button>
-          <el-button v-if="row.status!=='deleted'" size="mini" type="danger" @click="">删除
+          <el-button type="primary" size="mini" @click="check(row)">预览</el-button>
+          <el-button type="primary" size="mini">编辑</el-button>
+          <el-button type="success" size="mini">发布</el-button>
+          <el-button v-if="row.status!=='deleted'" size="mini" type="danger">删除
           </el-button>
         </template>
       </el-table-column>
     </el-table>
+
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+      <el-form ref="dataForm" :model="form" label-position="left" label-width="100px">
+        <el-form-item label="节目名称">
+          <el-input v-model="form.name" />
+        </el-form-item>
+        <el-form-item label="分辨率">
+          <el-input v-model="form.resolution" />
+        </el-form-item>
+        <el-form-item label="节目时长">
+          <el-input v-model="form.duration" />
+        </el-form-item>
+
+        <el-upload
+          ref="imgUpload"
+          list-type="picture-card"
+          :auto-upload="false"
+          :http-request="uploadSectionFile"
+          action="#"
+        >
+          <i slot="default" class="el-icon-plus" />
+          <div slot="file" slot-scope="{file}">
+            <img class="el-upload-list__item-thumbnail" :src="file.url" alt="">
+            <span class="el-upload-list__item-actions">
+              <span class="el-upload-list__item-preview" @click="handlePictureCardPreview(file)">
+                <i class="el-icon-zoom-in" />
+              </span>
+              <span v-if="!disabled" class="el-upload-list__item-delete" @click="handleRemove(file)">
+                <i class="el-icon-delete" />
+              </span>
+            </span>
+          </div>
+        </el-upload>
+
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">确 定</el-button>
+      </div>
+    </el-dialog>
+    <el-dialog :visible.sync="dialogVisible">
+      <img width="100%" :src="dialogImageUrl" alt="">
+    </el-dialog>
   </div>
 </template>
 
 <script>
+import { fetchShowList, preview, upload } from '@/api/show'
+import { getToken } from '@/utils/auth'
+import axios from 'axios'
+
 export default {
+  inject: ['reload'],
   data() {
     return {
+      list: null,
+      total: 0,
       formInline: {
         username: '',
         organization: ''
       },
+      dialogImageUrl: '',
+      dialogVisible: false,
+      disabled: false,
+      dialogFormVisible: false,
+      dialogStatus: '',
+      textMap: {
+        update: '编辑节目',
+        create: '创建节目'
+      },
+      form: {
+        name: '',
+        duration: '',
+        phone: '',
+        email: '',
+        organization: 1,
+        realName: '管理员',
+        status: '启用'
+      },
+      listQuery: {
+        page: 1,
+        limit: 5,
+        importance: undefined,
+        title: undefined,
+        type: undefined,
+        sort: '+id'
+      },
       value: '',
       options: '',
-      input1: ''
+      input1: '',
+      fileData: {},
+      headers: { // 请求头部参数
+        Authorization: 'Bearer ' + getToken()
+      }
     }
   },
+  created() {
+    this.getList()
+  },
   methods: {
+    async getList() {
+      this.listLoading = true
+      fetchShowList(this.listQuery).then(response => {
+        this.list = response.data.shows
+        this.total = response.data.total
+        console.log(response)
+        setTimeout(() => {
+          this.listLoading = false
+        }, 1.5 * 1000)
+      })
+    },
+
+    handleRemove(file) {
+      console.log(file)
+    },
+    handlePictureCardPreview(file) {
+      this.dialogImageUrl = file.url
+      this.dialogVisible = true
+    },
+
+    // 创建节目
+    async handleCreate() {
+      this.dialogStatus = 'create'
+      this.dialogFormVisible = true
+    },
+
+    // 图片上传成功的操作
+    // handleAvatarSuccess(res, file, filelist) {
+    //   if (res.msgCode === 200) {
+    //     this.imageUrl = URL.createObjectURL(file.raw)
+    //   } else {
+    //     this.$message.error(res.msgContent)
+    //   }
+    // },
+    // // 图片上传前的判断
+    // beforeAvatarUpload(file, filelist) {
+    //   upload
+    //   const isLt1M = file.size / 1024 / 1024
+    //   if (isLt1M > 1) {
+    //     this.$message.error('上传头像图片大小不能超过1MB')
+    //   }
+    //   return true
+    // },
+
+    uploadSectionFile(params) {
+      const file = params.file
+      console.log(params)
+      preview({ path: file.name }).then((res) => {
+        // console.log(res);
+        if (res.code === 200) {
+          const reader = new FileReader()
+          reader.readAsBinaryString(file)
+          reader.onload = function() {
+            axios({
+              method: 'put',
+              url: res.data,
+              data: reader.result
+            })
+              .then((res) => {
+                console.log(res)
+              })
+          }
+        }
+      })
+    },
+
+    async createData() {
+      this.$refs.imgUpload.submit()
+    },
     async onSubmit() {
       this.$message('submit!')
     },
@@ -71,18 +250,9 @@ export default {
   }
 }
 </script>
-
 <style scoped>
-.line {
-  text-align: center;
-}
-
 .app-container {
   background-color: rgb(240, 242, 245);
-}
-
-.el-row {
-  margin-bottom: 20px;
 }
 
 .form-container, .btn-container {

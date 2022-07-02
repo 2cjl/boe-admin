@@ -51,6 +51,7 @@
             <div>
               <el-button plain>重置</el-button>
               <el-button type="primary">查询</el-button>
+              <el-button type="primary" @click="handleCreate">新建设备</el-button>
             </div>
           </el-row>
         </el-col>

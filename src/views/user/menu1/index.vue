@@ -14,6 +14,7 @@
             <span>所属机构：</span>
             <el-select v-model="formInline.organization" placeholder="">
               <el-option label="test_o" value="shanghai"></el-option>
+              <el-option label="test2" value="shanghai"></el-option>
             </el-select>
           </el-row>
         </el-col>

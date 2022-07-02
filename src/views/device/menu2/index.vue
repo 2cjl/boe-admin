@@ -38,7 +38,7 @@
         </el-table-column>
         <el-table-column prop="organization" label="所属机构" width="200">
           <template v-slot="{row}">
-            <span>{{ row.OrganizationID }}</span>
+            <span>{{ row.Organization.name }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="number" label="设备数量" width="100">
@@ -127,7 +127,6 @@
                     @pagination="getList"
         />
       </el-tabs>
-      </el-row>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogTableVisible = false">
           返回
@@ -213,6 +212,7 @@ import Pagination from '@/components/Pagination'
 import { delGroup, getAllGroup } from '@/api/group'
 
 export default {
+  inject: ['reload'],
   components: { Pagination },
   name: 'index',
   data() {
