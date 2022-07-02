@@ -15,9 +15,25 @@ export function fetchDeviceInfo(id) {
   })
 }
 
+export function createDevice(data) {
+  return request({
+    url: `/device`,
+    method: 'post',
+    data
+  })
+}
+
+export function updateDevice(data) {
+  return request({
+    url: `/device`,
+    method: 'put',
+    data
+  })
+}
+
 export function delDevice(id) {
   return request({
     url: `/device/${id}`,
-    method: 'delete',
+    method: 'delete'
   })
 }

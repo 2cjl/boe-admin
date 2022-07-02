@@ -66,11 +66,6 @@
         </template>
       </el-table-column>
       <el-table-column prop="organization" label="所属机构">{{ organname }}</el-table-column>
-      <el-table-column prop="group" label="所属分组">
-        <template v-slot="{row}">
-          <span>{{ row.Name }}</span>
-        </template>
-      </el-table-column>
       <el-table-column prop="MAC" label="MAC地址">
         <template v-slot="{row}">
           <span>{{ row.Mac }}</span>
@@ -93,10 +88,10 @@
       </el-table-column>
       <el-table-column fixed="right" label="操作" width="280">
         <template v-slot="{row,$index}">
-          <el-button type="primary" size="mini" @click="check(row)">详情</el-button>
-          <el-button type="primary" size="mini" @click="">控制</el-button>
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">编辑</el-button>
-          <el-button v-if="row.status!=='deleted'" size="mini" type="danger" @click="handleDelete(row)">删除
+          <el-button type="text" size="mini" @click="check(row)">详情</el-button>
+          <el-button type="text" size="mini" @click="">控制</el-button>
+          <el-button type="text" size="mini" @click="handleUpdate(row)">编辑</el-button>
+          <el-button v-if="row.status!=='deleted'" size="mini" type="text" @click="handleDelete(row)">删除
           </el-button>
         </template>
       </el-table-column>
@@ -148,29 +143,41 @@
       </div>
     </el-dialog>
 
-    <el-dialog :title="编辑设备" :visible.sync="dialogEditVisible" width="30%">
+    <el-dialog title="新建设备" :visible.sync="dialogCreateVisible" width="30%">
       <el-form ref="dataForm" :model="form" label-position="left" label-width="100px">
         <el-form-item label="设备名称" prop="username">
           <el-input v-model="form.username" />
         </el-form-item>
-        <el-form-item label="所属分组" prop="phone">
-          <el-select v-model="value" placeholder="请选择">
-            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
+        <el-form-item label="MAC 地址" prop="username">
+          <el-input v-model="form.mac" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogCreateVisible = false">取 消</el-button>
+        <el-button type="primary" @click="create()">确 定</el-button>
+      </div>
+    </el-dialog>
+
+    <el-dialog title="编辑设备" :visible.sync="dialogEditVisible" width="30%">
+      <el-form ref="dataForm" :model="form" label-position="left" label-width="100px">
+        <el-form-item label="设备名称" prop="username">
+          <el-input v-model="form.username" />
+        </el-form-item>
+        <el-form-item label="MAC 地址" prop="username">
+          <el-input v-model="form.mac" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="updateData()">确 定</el-button>
+        <el-button type="primary" @click="update()">确 定</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { delDevice, fetchDeviceInfo, fetchDeviceList } from '@/api/device'
+import { createDevice, delDevice, fetchDeviceInfo, fetchDeviceList, updateDevice } from '@/api/device'
 import Pagination from '@/components/Pagination'
-import { delGroup } from '@/api/group'
 
 export default {
   inject: ['reload'],
@@ -203,13 +210,14 @@ export default {
         limit: 5
       },
       form: {
+        id: 0,
         username: '',
-        passwd: '',
-        group: ''
+        mac: ''
       },
       input1: '',
       value: '',
       options: '',
+      dialogCreateVisible: false,
       dialogEditVisible: false,
       dialogTableVisible: false,
       dialogFormVisible: false
@@ -229,9 +237,23 @@ export default {
       fetchDeviceList(this.listQuery).then(response => {
         this.list = response.data.devices
         this.total = response.data.total
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
+      })
+    },
+
+    handleCreate() {
+      this.form.username = ''
+      this.form.mac = ''
+      this.dialogCreateVisible = true
+    },
+
+    create() {
+      createDevice({ name: this.form.username, mac: this.form.mac }).then((res) => {
+        fetchDeviceList(this.listQuery).then(response => {
+          this.list = response.data.devices
+          this.total = response.data.total
+        })
+      }).finally(() => {
+        this.dialogCreateVisible = false
       })
     },
 
@@ -251,12 +273,31 @@ export default {
 
     // 更新设备
     async handleUpdate(row) {
-      this.form = Object.assign({}, row) // copy obj
+      // this.form = Object.assign({}, row) // copy obj
+      this.form.id = row.ID
+      this.form.username = row.Name
+      this.form.mac = row.Mac
       this.dialogEditVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
+      // this.$nextTick(() => {
+      //   this.$refs['dataForm'].clearValidate()
+      // })
+    },
+
+    update() {
+      updateDevice({
+        id: this.form.id,
+        name: this.form.username,
+        mac: this.form.mac
+      }).then((res) => {
+        fetchDeviceList(this.listQuery).then(response => {
+          this.list = response.data.devices
+          this.total = response.data.total
+        })
+      }).finally(() => {
+        this.dialogEditVisible = false
       })
     },
+
     check(row) {
       fetchDeviceInfo(row.ID).then(response => {
         this.info = response.data

@@ -36,10 +36,10 @@
         <el-table-column prop="DeviceCnt" label="设备数量" width="100" />
         <el-table-column prop="Describe" label="描述" />
         <el-table-column fixed="right" label="操作">
-          <template v-slot="{row,$index}">
+          <template v-slot="{row, $index}">
             <el-button type="text" size="mini" @click="check(row)">详情</el-button>
             <el-button type="text" size="mini" @click="handleUpdate(row)">编辑</el-button>
-            <el-button v-if="row.status!=='deleted'" size="mini" type="text" @click="handleDelete(row)">删除
+            <el-button v-if="row.status!=='deleted'" size="mini" type="text" @click="handleDelete(row, $index)">删除
             </el-button>
           </template>
         </el-table-column>
@@ -231,7 +231,7 @@ export default {
       getAllGroup(this.listQuery).then(response => {
         this.list = response.data.groups
         this.deviceCnt = response.data.deviceCnt
-        console.log(response)
+        // console.log(response)
         this.total = response.data.total
       })
     },
@@ -294,7 +294,12 @@ export default {
         devices: this.form.multipleSelection.map((v) => v.ID)
       }).then((res) => {
         if (res.code === 200) {
-          console.log()
+          getAllGroup(this.listQuery).then(response => {
+            this.list = response.data.groups
+            this.deviceCnt = response.data.deviceCnt
+            console.log(response)
+            this.total = response.data.total
+          })
         }
       }).finally(() => {
         this.dialogFormVisible = false
