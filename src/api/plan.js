@@ -111,3 +111,11 @@ export function deletePlan(id) {
     method: 'delete'
   })
 }
+
+export function publishPlan(id) {
+  return request({
+    url: `/plan/publish?planId=${id}`,
+    method: 'put'
+  })
+}
+
