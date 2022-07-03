@@ -106,7 +106,7 @@
           <el-button type="text" size="mini">
             加密下载
           </el-button>
-          <el-button v-if="row.State === '未发布'" type="text" size="mini">
+          <el-button v-if="row.State === '未发布'" type="text" size="mini" @click="publish(row)">
             发布
           </el-button>
           <el-button v-else-if="row.State === '发布中'" type="text" size="mini" disabled>
@@ -265,7 +265,15 @@ import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import moment from 'moment'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-import { getPlanList, getPlanDetailList, queryPlan, copyProgram, deleteProgram, deletePlan } from '@/api/plan'
+import {
+  getPlanList,
+  getPlanDetailList,
+  queryPlan,
+  copyProgram,
+  deleteProgram,
+  deletePlan,
+  publishPlan
+} from '@/api/plan'
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' },
   { key: 'US', display_name: 'USA' },
@@ -565,6 +573,18 @@ export default {
     //   })
     //   this.list.splice(index, 1)
     // },
+    publish(row) {
+      publishPlan(row.ID).then((res) => {
+        if (res.code === 200) {
+          this.$message({
+            message: '发布计划成功',
+            type: 'success'
+          })
+        } else {
+          this.$message.error('发布计划失败')
+        }
+      })
+    },
     check(id) {
       this.dialogFormVisible = true
       getPlanDetailList(id).then((res) => {
