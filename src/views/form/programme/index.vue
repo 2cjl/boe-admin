@@ -12,7 +12,7 @@
           <el-row type="flex" justify="end" style="margin-bottom: -15px">
             <div>
               <el-button plain @click="reset()">重置</el-button>
-              <el-button type="primary" @click="getList()">查询</el-button>
+              <el-button type="primary" @click="checkPrograms(input1)">查询</el-button>
               <el-button type="primary" @click="handleCreate">创建节目</el-button>
             </div>
           </el-row>
@@ -21,37 +21,37 @@
     </div>
     <el-table :data="list" border style="width: 100%">
       <el-table-column type="selection" width="55" />
-      <el-table-column label="缩略图" width="100px">
+      <el-table-column label="缩略图" width="100px" align="center">
         <template v-slot="{row}">
           <el-image :src="row.Preview" />
         </template>
       </el-table-column>
-      <el-table-column label="节目名称" width="220px">
+      <el-table-column label="节目名称" width="220px" align="center">
         <template v-slot="{row}">
           <span>{{ row.Name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="分辨率" width="150px">
+      <el-table-column label="分辨率" width="150px" align="center">
         <template v-slot="{row}">
           <span>{{ row.Resolution }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="节目时长" width="100px">
+      <el-table-column label="节目时长" width="100px" align="center">
         <template v-slot="{row}">
           <span>{{ row.Duration }}秒</span>
         </template>
       </el-table-column>
-      <el-table-column label="作者" width="100px">
+      <el-table-column label="作者" width="100px" align="center">
         <template v-slot="{row}">
           <span>{{ row.Author }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="更新时间">
+      <el-table-column label="更新时间" align="center">
         <template v-slot="{row}">
           <span>{{ row.UpdatedAt }}</span>
         </template>
       </el-table-column>
-      <el-table-column fixed="right" label="操作">
+      <el-table-column fixed="right" label="操作" align="center">
         <template v-slot="{row,$index}">
           <el-button type="text" size="mini" @click="handlePictureCardPreview(row.Preview)">预览</el-button>
           <el-button type="text" size="mini">编辑</el-button>
@@ -61,6 +61,7 @@
         </template>
       </el-table-column>
     </el-table>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :model="form" label-position="left" label-width="100px">
@@ -111,8 +112,10 @@
 import { fetchShowList, preview, upload } from '@/api/show'
 import { getToken } from '@/utils/auth'
 import axios from 'axios'
-
+import Pagination from '@/components/Pagination'
+import moment from 'moment'
 export default {
+  components: { Pagination },
   inject: ['reload'],
   data() {
     return {
@@ -163,13 +166,24 @@ export default {
   methods: {
     async getList() {
       this.listLoading = true
-      const selectQuery = {}
-      if (this.input1 !== '') {
-        selectQuery.name = this.input1
-      }
-      fetchShowList(Object.assign(selectQuery, this.listQuery)).then(response => {
+      // const selectQuery = {}
+      // if (this.input1 !== '') {
+      //   selectQuery.name = this.input1
+      // }
+      fetchShowList((this.listQuery.page - 1) * 10, this.listQuery.limit).then(response => {
         this.list = response.data.shows
         this.total = response.data.total
+        this.list.forEach((v) => { v.UpdatedAt = moment(v.UpdatedAt).format('YYYY-MM-DD HH:mm:ss') })
+        console.log(response)
+      }).finally(() => {
+        this.listLoading = true
+      })
+    },
+    checkPrograms(name) {
+      fetchShowList((this.listQuery.page - 1) * 10, this.listQuery.limit, name).then(response => {
+        this.list = response.data.shows
+        this.total = response.data.total
+        this.list.forEach((v) => { v.UpdatedAt = moment(v.UpdatedAt).format('YYYY-MM-DD HH:mm:ss') })
         console.log(response)
       }).finally(() => {
         this.listLoading = true

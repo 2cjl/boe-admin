@@ -17,7 +17,7 @@
           <el-row type="flex" justify="end" style="margin-bottom: -15px">
             <div>
               <el-button plain @click="reset()">重置</el-button>
-              <el-button type="primary" @click="getList()">查询</el-button>
+              <el-button type="primary" @click="checkUser(formInline.username)">查询</el-button>
               <el-button class="filter-item" style="margin-left: 10px;" type="primary" @click="handleCreate">新建用户
               </el-button>
             </div>
@@ -67,7 +67,7 @@
       </el-table-column>
       <el-table-column prop="updated_at" label="更新时间">
         <template v-slot="{row}">
-          <span>{{ row.CreatedAt }}</span>
+          <span>{{ row.UpdatedAt }}</span>
         </template>
       </el-table-column>
       <el-table-column fixed="right" label="操作">
@@ -120,6 +120,7 @@
 import waves from '@/directive/waves' // waves directive
 import Pagination from '@/components/Pagination'
 import { createUser, delUser, fetchUserList, putStop, updateUser } from '@/api/user' // secondary package based on el-pagination
+import moment from 'moment'
 
 const validPassword = (rule, value, callback) => {
   const reg = /^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{4,20}$/
@@ -178,7 +179,7 @@ export default {
       listLoading: true,
       listQuery: {
         page: 1,
-        limit: 5,
+        limit: 10,
         importance: undefined,
         title: undefined,
         type: undefined,
@@ -216,13 +217,24 @@ export default {
   methods: {
     async getList() {
       this.listLoading = true
-      const selectQuery = {}
-      if (this.formInline.username !== '') {
-        selectQuery.name = this.formInline.username
-      }
-      fetchUserList(Object.assign(selectQuery, this.listQuery)).then(response => {
+      // const selectQuery = {}
+      // if (this.formInline.username !== '') {
+      //   selectQuery.name = this.formInline.username
+      // }
+      fetchUserList((this.listQuery.page - 1) * 10, this.listQuery.limit).then(response => {
         this.list = response.users
         this.total = response.total
+        this.list.forEach((v) => { v.UpdatedAt = moment(v.UpdatedAt).format('YYYY-MM-DD HH:mm:ss') })
+        // console.log(response)
+      }).finally(() => {
+        this.listLoading = false
+      })
+    },
+    checkUser(name) {
+      fetchUserList((this.listQuery.page - 1) * 10, this.listQuery.limit, name).then(response => {
+        this.list = response.users
+        this.total = response.total
+        this.list.forEach((v) => { v.UpdatedAt = moment(v.UpdatedAt).format('YYYY-MM-DD HH:mm:ss') })
         // console.log(response)
       }).finally(() => {
         this.listLoading = false

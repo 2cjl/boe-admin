@@ -1,10 +1,14 @@
 import request from '@/utils/request'
 
-export function fetchShowList(query) {
+export function fetchShowList(offset, count, name) {
   return request({
     url: '/show/all',
     method: 'get',
-    params: query
+    params: {
+      offset,
+      count,
+      name
+    }
   })
 }
 

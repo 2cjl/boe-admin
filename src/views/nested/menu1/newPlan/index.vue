@@ -279,7 +279,7 @@
 
         </el-table>
 
-        <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" />
+        <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
         <div slot="footer" class="dialog-footer">
           <el-button @click="dialogProgramVisible = false">
             返回
@@ -363,7 +363,8 @@ export default {
   },
   computed: {},
   mounted() {
-    getProgramList(0, 10).then((res) => {
+    // console.log((this.listQuery.page - 1) * 10, this.listQuery.limit)
+    getProgramList((this.listQuery.page - 1) * 10, this.listQuery.limit).then((res) => {
       this.programList = res.data.shows
       this.total = res.data.total
       console.log(this.programList)
@@ -423,6 +424,14 @@ export default {
         }
       })
       console.log(form)
+    },
+    getList() {
+      // this.listLoading = true
+      getProgramList((this.listQuery.page - 1) * 10, this.listQuery.limit).then((res) => {
+        this.programList = res.data.shows
+        this.total = res.data.total
+        console.log(this.programList)
+      })
     },
     handleEdit(idx) {
       this.nowModifyTime = idx
@@ -623,7 +632,7 @@ export default {
       }
     },
     checkShow(name) {
-      getProgramList(0, 10, name).then((res) => {
+      getProgramList((this.listQuery.page - 1) * 10, this.listQuery.limit, name).then((res) => {
         this.programList = res.data.shows
         this.total = res.data.total
       })

@@ -8,11 +8,15 @@ export function login(data) {
   })
 }
 
-export function fetchUserList(query) {
+export function fetchUserList(offset, count, name) {
   return request({
     url: '/user/get_users',
     method: 'get',
-    params: query
+    params: {
+      offset,
+      count,
+      name
+    }
   })
 }
 
