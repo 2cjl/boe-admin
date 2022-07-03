@@ -265,7 +265,7 @@ import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import moment from 'moment'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-import { getPlanList, getPlanDetailList, queryPlan, copyProgram, deleteProgram } from '@/api/plan'
+import { getPlanList, getPlanDetailList, queryPlan, copyProgram, deleteProgram, deletePlan } from '@/api/plan'
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' },
   { key: 'US', display_name: 'USA' },
@@ -417,13 +417,17 @@ export default {
       this.multipleSelection = []
     },
     deleteSiglePlan(row, index) {
-      this.$notify({
-        title: 'Success',
-        message: 'Delete Successfully',
-        type: 'success',
-        duration: 2000
+      deletePlan(row.ID).then((res) => {
+        if (res.code === 200) {
+          this.planList.splice(index, 1)
+          this.$notify({
+            title: 'Success',
+            message: 'Delete Successfully',
+            type: 'success',
+            duration: 2000
+          })
+        }
       })
-      this.planList.splice(index, 1)
     },
     resetting() {
       this.value = ''

@@ -104,3 +104,10 @@ export function createPlan(data) {
     data
   })
 }
+
+export function deletePlan(id) {
+  return request({
+    url: `/plan/delete_plan?planId=${id}`,
+    method: 'delete'
+  })
+}
