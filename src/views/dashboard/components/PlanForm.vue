@@ -61,8 +61,8 @@ export default {
     return {
       tableKey: 0,
       list: null,
-      total: 0,
-      listLoading: true
+      total: 0
+      // listLoading: true
     }
   },
 
@@ -71,7 +71,7 @@ export default {
   },
   methods: {
     getList() {
-      this.listLoading = true
+      // this.listLoading = true
     }
   }
 }

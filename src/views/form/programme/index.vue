@@ -54,7 +54,7 @@
       <el-table-column fixed="right" label="操作" align="center">
         <template v-slot="{row,$index}">
           <el-button type="text" size="mini" @click="handlePictureCardPreview(row.Preview)">预览</el-button>
-          <el-button type="text" size="mini">编辑</el-button>
+          <el-button type="text" size="mini" @click="handleEdit(row)">编辑</el-button>
           <el-button type="text" size="mini">发布</el-button>
           <el-button v-if="row.status!=='deleted'" size="mini" type="text">删除
           </el-button>
@@ -69,7 +69,14 @@
           <el-input v-model="form.name" />
         </el-form-item>
         <el-form-item label="分辨率">
-          <el-input v-model="form.resolution" />
+          <el-select v-model="form.resolution" placeholder="请选择" clearable>
+            <el-option
+              v-for="item in options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.label"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="节目时长">
           <el-input v-model="form.duration" />
@@ -80,7 +87,7 @@
           list-type="picture-card"
           :auto-upload="false"
           :http-request="uploadSectionFile"
-          action="#"
+          :file-list="inputFileList"
         >
           <i slot="default" class="el-icon-plus" />
           <div slot="file" slot-scope="{file}">
@@ -109,8 +116,7 @@
 </template>
 
 <script>
-import { fetchShowList, preview, upload } from '@/api/show'
-import { getToken } from '@/utils/auth'
+import { createShow, fetchShowList, getUploadToken, updateShow } from '@/api/show'
 import axios from 'axios'
 import Pagination from '@/components/Pagination'
 import moment from 'moment'
@@ -135,13 +141,11 @@ export default {
         create: '创建节目'
       },
       form: {
+        id: 0,
         name: '',
         duration: '',
-        phone: '',
-        email: '',
-        organization: 1,
-        realName: '管理员',
-        status: '启用'
+        resolution: '',
+        fileData: []
       },
       listQuery: {
         page: 1,
@@ -152,12 +156,12 @@ export default {
         sort: '+id'
       },
       value: '',
-      options: '',
+      options: [{
+        label: '1920x1080',
+        value: '1920x1080'
+      }],
       input1: '',
-      fileData: {},
-      headers: { // 请求头部参数
-        Authorization: 'Bearer ' + getToken()
-      }
+      inputFileList: []
     }
   },
   created() {
@@ -195,6 +199,12 @@ export default {
     },
 
     handleRemove(file) {
+      for (let i = 0; i < this.inputFileList.length; i++) {
+        if (this.inputFileList[i].name === file.name) {
+          this.inputFileList.splice(i, 1)
+          break
+        }
+      }
       console.log(file)
     },
     handlePictureCardPreview(url) {
@@ -204,61 +214,111 @@ export default {
 
     // 创建节目
     async handleCreate() {
+      this.form = {
+        name: '',
+        duration: '',
+        resolution: '',
+        fileData: []
+      }
+      this.inputFileList = []
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
     },
 
-    // 图片上传成功的操作
-    // handleAvatarSuccess(res, file, filelist) {
-    //   if (res.msgCode === 200) {
-    //     this.imageUrl = URL.createObjectURL(file.raw)
-    //   } else {
-    //     this.$message.error(res.msgContent)
-    //   }
-    // },
-    // // 图片上传前的判断
-    // beforeAvatarUpload(file, filelist) {
-    //   upload
-    //   const isLt1M = file.size / 1024 / 1024
-    //   if (isLt1M > 1) {
-    //     this.$message.error('上传头像图片大小不能超过1MB')
-    //   }
-    //   return true
-    // },
+    handleEdit(row) {
+      this.form = {
+        id: row.ID,
+        name: row.Name,
+        duration: row.Duration,
+        resolution: row.Resolution
+      }
+      this.inputFileList = JSON.parse(row.Images).map((v) => {
+        return {
+          name: v.substring(v.lastIndexOf('/') + 1),
+          url: v
+        }
+      })
+
+      this.dialogStatus = 'update'
+      this.dialogFormVisible = true
+    },
 
     uploadSectionFile(params) {
+      console.log('params', params)
       const file = params.file
-      console.log(params)
-      preview({ path: file.name }).then((res) => {
+      getUploadToken().then((res) => {
         // console.log(res);
         if (res.code === 200) {
+          const formData = new FormData()
+          formData.set('key', '/boe-img/' + file.name)
+          formData.set('token', res.data)
+          formData.set('file', file)
           axios({
-            method: 'put',
-            url: res.data,
-            data: file
+            method: 'post',
+            url: 'http://up-z2.qiniup.com',
+            data: formData
           })
             .then((res) => {
-              console.log(res)
+              if (res.status === 200) {
+                this.form.fileData.push(`http://cdn.yuzzl.top/${res.data.key}`)
+              }
             })
-          // const reader = new FileReader()
-          // reader.readAsBinaryString(file)
-          // reader.onload = function() {
-          //   axios({
-          //     method: 'put',
-          //     url: res.data,
-          //     data: reader.result
-          //   })
-          //     .then((res) => {
-          //       console.log(res)
-          //     })
-          // }
         }
       })
     },
 
     async createData() {
       this.$refs.imgUpload.submit()
+      setTimeout(() => {
+        createShow({
+          name: this.form.name,
+          duration: parseInt(this.form.duration),
+          images: JSON.stringify(this.form.fileData),
+          resolution: this.form.resolution
+        }).then((res) => {
+          console.log(res)
+          if (res.code === 200) {
+            this.$message({
+              message: '创建节目成功',
+              type: 'success'
+            })
+          } else {
+            this.$message.error('创建节目失败')
+          }
+        }).finally(() => {
+          this.dialogFormVisible = false
+          this.getList()
+        })
+      }, 500)
     },
+
+    updateData() {
+      this.form.fileData = []
+      this.$refs.imgUpload.submit()
+      setTimeout(() => {
+        updateShow({
+          id: this.form.id,
+          name: this.form.name,
+          duration: parseInt(this.form.duration),
+          images: JSON.stringify(this.form.fileData),
+          resolution: this.form.resolution
+        }).then((res) => {
+          console.log(res)
+          if (res.code === 200) {
+            this.$message({
+              message: '更新节目成功',
+              type: 'success'
+            })
+          } else {
+            this.$message.error('更新节目失败')
+          }
+        }).finally(() => {
+          this.dialogFormVisible = false
+          this.getList()
+        })
+      }, 500)
+    },
+
     async onCancel() {
       this.$message({
         message: 'cancel!',

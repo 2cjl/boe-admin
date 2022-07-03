@@ -27,3 +27,26 @@ export function upload(url, data) {
     data
   })
 }
+
+export function getUploadToken() {
+  return request({
+    url: '/file/get_upload_token',
+    method: 'get'
+  })
+}
+
+export function createShow(data) {
+  return request({
+    url: '/show',
+    method: 'post',
+    data
+  })
+}
+
+export function updateShow(data) {
+  return request({
+    url: '/show',
+    method: 'put',
+    data
+  })
+}
