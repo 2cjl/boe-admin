@@ -437,6 +437,8 @@ export default {
         this.planList.forEach((v) => { v.UpdatedAt = moment(v.UpdatedAt).format('YYYY-MM-DD HH:mm:ss') })
         // this.planList.forEach((v) => {v.CreatedAt = moment(v.CreatedAt).format('MMMM Do YYYY')})
         console.log(this.planList)
+      }).finally(() => {
+        this.listLoading = false
       })
       // fetchList(this.listQuery).then(response => {
       //   this.list = response.data.items

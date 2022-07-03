@@ -93,7 +93,13 @@
                 </template>
               </el-table-column>
             </el-table>
-            <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+            <pagination
+              v-show="total>0"
+              :total="total"
+              :page.sync="listQuery.page"
+              :limit.sync="listQuery.limit"
+              @pagination="getList"
+            />
           </el-tab-pane>
           <el-tab-pane label="分组设备" name="second">
             <el-table
@@ -102,6 +108,7 @@
               fit
               highlight-current-row
               style="width: 100%;"
+              @selection-change="handleGroupSelectionChange"
             >
               <el-table-column
                 type="selection"
@@ -118,7 +125,13 @@
                 </template>
               </el-table-column>
             </el-table>
-            <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+            <pagination
+              v-show="total>0"
+              :total="total"
+              :page.sync="listQuery.page"
+              :limit.sync="listQuery.limit"
+              @pagination="getList"
+            />
           </el-tab-pane>
         </el-tabs>
       </el-row>
@@ -128,7 +141,7 @@
 
       <el-button @click="$router.push('menu1')">取消</el-button>
       <el-button @click="$router.go(-1)">上一步</el-button>
-      <el-button type="primary" @click="$router.push('menu1')">发布</el-button>
+      <el-button type="primary" @click="pub()">发布</el-button>
 
     </div>
 
@@ -137,7 +150,10 @@
 </template>
 <script>
 import Pagination from '@/components/Pagination'
-import { getDeviceList, getOrganization, getGroupDevice } from '@/api/plan'
+import { getDeviceList, getGroupDevice, createPlan } from '@/api/plan'
+import { generatePlayHtml } from '@/utils/html-generate'
+import moment from 'moment'
+
 export default {
   components: { Pagination },
   data() {
@@ -153,6 +169,7 @@ export default {
         sort: '+id'
       },
       deviceListSelection: [],
+      groupListSelection: [],
       devicelist: [],
       deviceByGroup: [],
       activeName: 'first',
@@ -175,7 +192,7 @@ export default {
         label: '473737'
       }],
       organ: '',
-      group: ''
+      group: '',
       // deviceLists: [
       //   {
       //     name: '测试巫山',
@@ -187,7 +204,7 @@ export default {
       //     status: '离线'
       //   }
       // ]
-
+      beforeData: null
     }
   },
   computed: {
@@ -197,10 +214,14 @@ export default {
   },
   mounted() {
     this.getList()
+    this.beforeData = this.$route.params.message
   },
   methods: {
     handleDeviceSelectionChange(val) {
       this.deviceListSelection = val
+    },
+    handleGroupSelectionChange(val) {
+      this.groupListSelection = val
     },
     checkDevices(name, group) {
       this.activeName = 'first'
@@ -231,20 +252,82 @@ export default {
         this.deviceByGroup = res.data
         // console.log(this.deviceByGroup)
       })
+    },
+    pub() {
+      const weekMap = new Map()
+      weekMap.set('星期一', 1)
+      weekMap.set('星期二', 2)
+      weekMap.set('星期三', 3)
+      weekMap.set('星期四', 4)
+      weekMap.set('星期五', 5)
+      weekMap.set('星期六', 6)
+      weekMap.set('星期七', 7)
+      const deviceIds = []
+      this.groupListSelection.forEach((v1) => {
+        getGroupDevice(v1.ID).then((res) => {
+          res.data.forEach((v2) => deviceIds.push(v2.ID))
+        })
+      })
+      this.deviceListSelection.forEach((v) => {
+        if (deviceIds.indexOf(v.ID) === -1) {
+          deviceIds.push(v.ID)
+        }
+      })
+      createPlan({
+        name: this.beforeData.name,
+        mode: this.beforeData.mode,
+        startDate: moment(this.beforeData.playTime[0]).format('YYYY-MM-DD'),
+        endDate: moment(this.beforeData.playTime[1]).format('YYYY-MM-DD'),
+        DeviceIds: deviceIds,
+        playPeriods: this.beforeData.PlayPeriods.map((v) => {
+          let loopMode = ''
+          if (v.day.period === '每天') {
+            loopMode = JSON.stringify({ mode: '每天' })
+          } else if (v.day.period === '每周') {
+            loopMode = JSON.stringify({ mode: '每周', times: v.day.week.map((v) => weekMap.get(v)) })
+          } else if (v.day.period === '每月') {
+            loopMode = JSON.stringify({ mode: '每月', times: v.day.date })
+          }
+          const shows = []
+          v.programs.forEach((v) => {
+            for (const vElement of v.Images) {
+              shows.push({ imgUrl: vElement, duration: v.Duration })
+            }
+          })
+          return {
+            LoopMode: loopMode,
+            startTime: v.startTime,
+            endTime: v.endTime,
+            showIds: v.programs.map((v) => v.ID),
+            html: generatePlayHtml(shows)
+          }
+        })
+      }).then((res) => {
+        if (res.code === 200) {
+          this.$message({
+            message: '创建计划成功',
+            type: 'success'
+          })
+        }
+      }).catch((e) => {
+        console.log(e)
+      })
+      this.$router.push('menu1')
     }
-
   }
 }
 </script>
 <style scoped>
 .app-container {
-   background-color: rgb(240, 242, 245);
+  background-color: rgb(240, 242, 245);
 }
-.form-container, .device-container{
+
+.form-container, .device-container {
   background: #fff;
   padding: 16px 20px;
   margin-bottom: 15px;
 }
+
 .input {
   width: 60%;
 }

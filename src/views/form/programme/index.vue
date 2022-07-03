@@ -171,6 +171,8 @@ export default {
         this.list = response.data.shows
         this.total = response.data.total
         console.log(response)
+      }).finally(() => {
+        this.listLoading = true
       })
     },
 

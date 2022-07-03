@@ -303,9 +303,9 @@ export default {
     return {
       form: {
         name: '',
-        policy: '',
-        mode: '',
-        syn: '',
+        policy: '替换',
+        mode: '时段播放',
+        syn: '关闭',
         playTime: '',
         PlayPeriods: ''
       },

@@ -224,6 +224,8 @@ export default {
         this.list = response.users
         this.total = response.total
         // console.log(response)
+      }).finally(() => {
+        this.listLoading = false
       })
     },
 

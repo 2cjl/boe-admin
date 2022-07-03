@@ -96,3 +96,11 @@ export function getResolutionList() {
     method: 'get'
   })
 }
+
+export function createPlan(data) {
+  return request({
+    url: '/plan/create',
+    method: 'post',
+    data
+  })
+}
