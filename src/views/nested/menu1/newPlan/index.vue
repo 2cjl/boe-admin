@@ -102,7 +102,7 @@
                   <div>
                     <el-image
 
-                      :src="program.Images"
+                      :src="program.Preview"
                       class="img-container"
                     />
                     <div class="mask">
@@ -493,18 +493,18 @@ export default {
 
       this.endTime = e.toLocaleString().substring(11, 19)
       // 判断时间是否重复
-      for (let i = 0; i < this.timeLists.length; i++) {
-        const sList = this.timeLists[i].startTime.split(':')
-        const eList = this.timeLists[i].endTime.split(':')
-        const s1 = new Date(2016, 9, 10, sList[0], sList[1], sList[2]).getTime()
-        const e1 = new Date(2016, 9, 10, eList[0], eList[1], eList[2]).getTime()
-        const s2 = s.getTime()
-        const e2 = e.getTime()
-        if ((s2 >= s1 && s2 <= e1) || (e2 >= s1 && e2 <= e1) || (s2 <= s1 && e2 >= e1)) {
-          this.$message.error('循环时间不能与其他重叠')
-          return
-        }
-      }
+      // for (let i = 0; i < this.timeLists.length; i++) {
+      //   const sList = this.timeLists[i].startTime.split(':')
+      //   const eList = this.timeLists[i].endTime.split(':')
+      //   const s1 = new Date(2016, 9, 10, sList[0], sList[1], sList[2]).getTime()
+      //   const e1 = new Date(2016, 9, 10, eList[0], eList[1], eList[2]).getTime()
+      //   const s2 = s.getTime()
+      //   const e2 = e.getTime()
+      //   if ((s2 >= s1 && s2 <= e1) || (e2 >= s1 && e2 <= e1) || (s2 <= s1 && e2 >= e1)) {
+      //     this.$message.error('循环时间不能与其他重叠')
+      //     return
+      //   }
+      // }
 
       // const t1 = []
       // const t2 = []

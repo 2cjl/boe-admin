@@ -50,3 +50,10 @@ export function updateShow(data) {
     data
   })
 }
+
+export function delShow(id) {
+  return request({
+    url: `/show/${id}`,
+    method: 'delete'
+  })
+}

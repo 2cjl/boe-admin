@@ -56,7 +56,7 @@
           <el-button type="text" size="mini" @click="handlePictureCardPreview(row.Preview)">预览</el-button>
           <el-button type="text" size="mini" @click="handleEdit(row)">编辑</el-button>
           <el-button type="text" size="mini">发布</el-button>
-          <el-button v-if="row.status!=='deleted'" size="mini" type="text">删除
+          <el-button v-if="row.status!=='deleted'" size="mini" type="text" @click="handelDel(row)">删除
           </el-button>
         </template>
       </el-table-column>
@@ -116,7 +116,7 @@
 </template>
 
 <script>
-import { createShow, fetchShowList, getUploadToken, updateShow } from '@/api/show'
+import { createShow, delShow, fetchShowList, getUploadToken, updateShow } from '@/api/show'
 import axios from 'axios'
 import Pagination from '@/components/Pagination'
 import moment from 'moment'
@@ -250,7 +250,7 @@ export default {
         // console.log(res);
         if (res.code === 200) {
           const formData = new FormData()
-          formData.set('key', '/boe-img/' + file.name)
+          formData.set('key', 'boe-img/' + file.name)
           formData.set('token', res.data)
           formData.set('file', file)
           axios({
@@ -277,19 +277,25 @@ export default {
           resolution: this.form.resolution
         }).then((res) => {
           console.log(res)
-          if (res.code === 200) {
-            this.$message({
-              message: '创建节目成功',
-              type: 'success'
-            })
-          } else {
-            this.$message.error('创建节目失败')
-          }
         }).finally(() => {
           this.dialogFormVisible = false
           this.getList()
         })
       }, 500)
+    },
+
+    handelDel(row) {
+      delShow(row.ID).then((res) => {
+        if (res.code === 200) {
+          this.$message({
+            message: '删除节目成功',
+            type: 'success'
+          })
+          this.getList()
+        } else {
+          this.$message.error('删除节目失败')
+        }
+      })
     },
 
     updateData() {
