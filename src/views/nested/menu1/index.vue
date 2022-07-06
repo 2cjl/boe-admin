@@ -580,6 +580,7 @@ export default {
             message: '发布计划成功',
             type: 'success'
           })
+          this.getList()
         } else {
           this.$message.error('发布计划失败')
         }

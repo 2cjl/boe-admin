@@ -98,7 +98,7 @@
         </el-form-item>
         <el-form-item label="所属机构">
           <el-select v-model="form.organization" placeholder="请选择所属机构">
-            <el-option label="test_o" value="1" />
+            <el-option label="2cjl" value="1" />
           </el-select>
         </el-form-item>
         <el-form-item label="邮箱" prop="email">

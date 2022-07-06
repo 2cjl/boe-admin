@@ -55,27 +55,27 @@ export const constantRoutes = [
     }]
   },
 
-  {
-    path: '/example',
-    component: Layout,
-    redirect: '/example/table',
-    name: 'Example',
-    meta: { title: '素材管理', icon: 'el-icon-s-help' },
-    children: [
-      {
-        path: 'table',
-        name: 'Table',
-        component: () => import('@/views/table/index'),
-        meta: { title: '素材列表', icon: 'table' }
-      },
-      {
-        path: 'tree',
-        name: 'Tree',
-        component: () => import('@/views/tree/index'),
-        meta: { title: 'Tree', icon: 'tree' }
-      }
-    ]
-  },
+  // {
+  //   path: '/example',
+  //   component: Layout,
+  //   redirect: '/example/table',
+  //   name: 'Example',
+  //   meta: { title: '素材管理', icon: 'el-icon-s-help' },
+  //   children: [
+  //     {
+  //       path: 'table',
+  //       name: 'Table',
+  //       component: () => import('@/views/table/index'),
+  //       meta: { title: '素材列表', icon: 'table' }
+  //     },
+  //     {
+  //       path: 'tree',
+  //       name: 'Tree',
+  //       component: () => import('@/views/tree/index'),
+  //       meta: { title: 'Tree', icon: 'tree' }
+  //     }
+  //   ]
+  // },
 
   {
     path: '/form',
@@ -123,13 +123,13 @@ export const constantRoutes = [
         name: 'Device',
         component: () => import('@/views/nested/menu1/deviceManage/index')
 
-      },
-      {
-        path: 'menu2',
-        component: () => import('@/views/nested/menu2/index'),
-        name: 'Menu2',
-        meta: { title: '计划审核', icon: 'link' }
       }
+      // {
+      //   path: 'menu2',
+      //   component: () => import('@/views/nested/menu2/index'),
+      //   name: 'Menu2',
+      //   meta: { title: '计划审核', icon: 'link' }
+      // }
     ]
   },
 
